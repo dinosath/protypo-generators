@@ -3,10 +3,8 @@ rrgen:
   frontmatterSeparator: "===\n"
 
 application:
-  name: "erp"
   type: monolith
-
-authenticationType: jwt
+  authenticationType: jwt
 
 client:
   dataProviderUrl: "http://localhost:8080"

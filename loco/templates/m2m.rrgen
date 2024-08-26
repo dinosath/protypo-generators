@@ -6,10 +6,10 @@
 {% set left = relation | split(pat="_") | first %}
 {% set right = relation | split(pat="_") | last %}
 {% set file_name = relation | snake_case %}
-to: {{ outputFolder }}/src/models/entities/{{ file_name }}.rs
+to: {{ values.outputFolder }}/src/models/entities/{{ file_name }}.rs
 message: "Entity `{{ file_name }}` was added successfully."
 injections:
-- into: {{ outputFolder }}/src/models/entities/mod.rs
+- into: {{ values.outputFolder }}/src/models/entities/mod.rs
   append: true
   content: "pub mod {{ file_name }};"
 ===

@@ -1,0 +1,131 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Purchase",
+  "type": "object",
+  "properties": {
+    "date": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "taxNumber": {
+      "type": "string"
+    },
+    "document": {
+      "type": "string"
+    },
+    "deliveryDate": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "shippingStart": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "transportNumber": {
+      "type": "string"
+    },
+    "deliveryAddress": {
+      "type": "string"
+    },
+    "deliveryPostalCode": {
+      "type": "string"
+    },
+    "deliveryRegion": {
+      "type": "string"
+    },
+    "deliveryCity": {
+      "type": "string"
+    },
+    "deliveryCountry": {
+      "type": "string"
+    },
+    "approvalStatus": {
+      "$ref": "ApprovalStatus.json"
+    },
+    "netAmount": {
+      "type": "number"
+    },
+    "discountAmount": {
+      "type": "number"
+    },
+    "expenses": {
+      "type": "number"
+    },
+    "vatAmount": {
+      "type": "number"
+    },
+    "totalAmount": {
+      "type": "number"
+    },
+    "remarks": {
+      "type": "string"
+    },
+    "project": {
+      "$ref": "Project.json",
+      "x-relationship": "many-to-one"
+    },
+    "taxSeries": {
+      "$ref": "PurchaseTaxSeries.json",
+      "x-relationship": "many-to-one"
+    },
+    "supplier": {
+      "$ref": "Supplier.json",
+      "x-relationship": "many-to-one"
+    },
+    "supplierBranch": {
+      "$ref": "Branch.json",
+      "x-relationship": "many-to-one"
+    },
+    "vatStatus": {
+      "$ref": "VatStatus.json",
+      "x-relationship": "many-to-one"
+    },
+    "movementPurpose": {
+      "$ref": "MovementPurpose.json",
+      "x-relationship": "many-to-one"
+    },
+    "shippingMethod": {
+      "$ref": "ShippingMethod.json",
+      "x-relationship": "many-to-one"
+    },
+    "orderFrom": {
+      "$ref": "Supplier.json",
+      "x-relationship": "many-to-one"
+    },
+    "transportMeans": {
+      "$ref": "TransportMeans.json",
+      "x-relationship": "many-to-one"
+    },
+    "carrier": {
+      "$ref": "Carrier.json",
+      "x-relationship": "many-to-one"
+    },
+    "payment": {
+      "$ref": "Payment.json",
+      "x-relationship": "many-to-one"
+    },
+    "items": {
+      "type": "array",
+      "items": {
+        "$ref": "Item.json",
+        "x-relationship": "many-to-many"
+      }
+    }
+  },
+  "required": [
+    "taxSeries",
+    "supplier",
+    "vatStatus",
+    "movementPurpose",
+    "shippingMethod",
+    "orderFrom",
+    "transportMeans",
+    "carrier",
+    "payment",
+    "date",
+    "document",
+    "netAmount",
+    "expenses",
+    "vatAmount"
+  ]
+}

@@ -1,0 +1,25 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "CounterInvoice",
+  "type": "object",
+  "properties": {
+    "invoiceNumber": {
+      "type": "string"
+    },
+    "issueDate": {
+      "type": "string",
+      "format": "date"
+    },
+    "reason": {
+      "type": "string"
+    },
+    "taxSeries": {
+      "$ref": "PurchaseTaxSeries.json",
+      "x-relationship": "one-to-many"
+    }
+  },
+  "required": [
+    "invoiceNumber",
+    "issueDate"
+  ]
+}

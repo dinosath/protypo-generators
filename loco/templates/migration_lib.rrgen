@@ -1,7 +1,7 @@
 {% import "_macros.tpl" as macros %}
 
 
-to: {{ outputFolder }}/migration/src/lib.rs
+to: {{ values.outputFolder }}/migration/src/lib.rs
 message: "Migrations `lib.rs` was added successfully."
 ===
 

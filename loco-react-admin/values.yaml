@@ -1,0 +1,8 @@
+loco:
+  application:
+    name: erp
+  outputFolder: "/home/dinosath/Projects/looc"
+react-admin:
+  application:
+    name: erp
+  outputFolder: "/home/dinosath/Projects/looc/frontend"

@@ -1,7 +1,7 @@
 {# generate model ui #}
-{% import "macros_front.tpl" as macros %}
-{% import "macros.tpl" as core %}
-to: {{ outputFolder }}/app.jdl
+{% import "_macros_front.tpl" as macros %}
+{% import "_macros.tpl" as core %}
+to: {{ values.outputFolder }}/app.jdl
 message: "JDL file for app was created successfully."
 ===
 

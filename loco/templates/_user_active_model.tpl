@@ -166,7 +166,7 @@ impl Model {
             api_key: ActiveValue::Set(format!("lo-{}", Uuid::new_v4())),
             email: ActiveValue::set(Some(params.email.to_string())),
             password: ActiveValue::set(password_hash),
-            username: ActiveValue::set(params.name.to_string()),
+            username: ActiveValue::set(params.username.to_string()),
             ..Default::default()
         }
             .insert(&txn)

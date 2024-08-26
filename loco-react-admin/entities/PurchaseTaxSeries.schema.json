@@ -1,0 +1,57 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "PurchaseTaxSeries",
+  "type": "object",
+  "properties": {
+    "serialNumber": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    },
+    "shortCode": {
+      "type": "string"
+    },
+    "number": {
+      "type": "integer"
+    },
+    "active": {
+      "type": "boolean"
+    },
+    "manual": {
+      "type": "boolean"
+    },
+    "postCreationAction": {
+      "type": "string"
+    },
+    "automaticSettlement": {
+      "type": "boolean"
+    },
+    "purchase": {
+      "$ref": "Purchase.json",
+      "x-relationship": "one-to-many"
+    },
+    "counterInvoices": {
+      "$ref": "CounterInvoice.json",
+      "x-relationship": "many-to-one"
+    },
+    "branch": {
+      "$ref": "Branch.json",
+      "x-relationship": "many-to-one"
+    },
+    "marking": {
+      "$ref": "Marking.json",
+      "x-relationship": "many-to-one"
+    },
+    "printingMethod": {
+      "$ref": "PrintingMethod.json",
+      "x-relationship": "many-to-one"
+    }
+  },
+  "required": [
+    "serialNumber",
+    "description",
+    "shortCode",
+    "active"
+  ]
+}
