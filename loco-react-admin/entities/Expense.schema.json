@@ -1,0 +1,57 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Expense",
+    "type": "object",
+    "properties": {
+        "date": {
+            "type": "string",
+            "format": "date-time"
+        },
+        "taxNumber": {
+            "type": "string"
+        },
+        "document": {
+            "type": "string"
+        },
+        "netAmount": {
+            "type": "number"
+        },
+        "discountAmount": {
+            "type": "number"
+        },
+        "expenses": {
+            "type": "number"
+        },
+        "vatAmount": {
+            "type": "number"
+        },
+        "totalAmount": {
+            "type": "number"
+        },
+        "deliveryDate": {
+            "type": "string",
+            "format": "date-time"
+        },
+        "shippingStart": {
+            "type": "string",
+            "format": "date-time"
+        },
+        "approvalStatus": {
+            "$ref": "ApprovalStatus.json"
+        },
+        "remarks": {
+            "type": "string"
+        },
+        "expenseGroup": {
+            "$ref": "ExpenseGroup.json",
+            "x-relationship": "many-to-one"
+        }
+    },
+    "required": [
+        "date",
+        "document",
+        "netAmount",
+        "expenses",
+        "vatAmount"
+    ]
+}

@@ -1,0 +1,39 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "TransportMeans",
+    "type": "object",
+    "properties": {
+        "code": {
+            "type": "string"
+        },
+        "active": {
+            "type": "boolean"
+        },
+        "transportMeansNumber": {
+            "type": "string"
+        },
+        "description": {
+            "type": "string"
+        },
+        "mass": {
+            "type": "number"
+        },
+        "volume": {
+            "type": "number"
+        },
+        "remarks": {
+            "type": "string"
+        },
+        "purchase": {
+            "$ref": "Purchase.json",
+            "x-relationship": "one-to-many"
+        }
+
+    },
+    "required": [
+        "code",
+        "active",
+        "transportMeansNumber",
+        "description"
+    ]
+}

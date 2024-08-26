@@ -1,0 +1,29 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "ExpenseGroup",
+  "type": "object",
+  "properties": {
+    "code": {
+      "type": "string"
+    },
+    "shortCode": {
+      "type": "string"
+    },
+    "active": {
+      "type": "boolean"
+    },
+    "description": {
+      "type": "string"
+    },
+    "expenses": {
+      "$ref": "Expense.json",
+      "x-relationship": "one-to-many"
+    }
+  },
+  "required": [
+    "code",
+    "shortCode",
+    "active",
+    "description"
+  ]
+}
