@@ -1,4 +1,5 @@
-{% set file_name = name |  snake_case -%}
+{% for entity in entities %}
+{% set file_name = entity.title | snake_case -%}
 {% set module_name = file_name | pascal_case -%}
 to: src/controllers/{{ file_name }}.rs
 skip_exists: true
@@ -88,3 +89,4 @@ pub fn routes() -> Routes {
         .add("/:id", delete(remove))
         .add("/:id", post(update))
 }
+{% endfor %}
