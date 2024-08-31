@@ -1,6 +1,10 @@
+{% set file_name= rootFolder ~"/tests/requests/notes.rs" %}
+to: {{file_name}}
+message: "File `{{file_name}}` was created successfully."
+===
 use insta::{assert_debug_snapshot, with_settings};
 use loco_rs::testing;
-use {{ package.name }}::{app::App, models::_entities::notes::Entity};
+use {{ applicationName }}::{app::App, models::_entities::notes::Entity};
 use sea_orm::entity::prelude::*;
 use serial_test::serial;
 

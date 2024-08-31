@@ -1,6 +1,10 @@
+{% set file_name= rootFolder ~"/tests/requests/users.rs" %}
+to: {{file_name}}
+message: "File `{{file_name}}` was created successfully."
+===
 use insta::{assert_debug_snapshot, with_settings};
 use loco_rs::testing;
-use {{ package.name }}::app::App;
+use {{ applicationName }}::app::App;
 use serial_test::serial;
 
 use super::prepare_data;

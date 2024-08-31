@@ -1,6 +1,10 @@
+{% set file_name= rootFolder ~"/tests/models/user.rs" %}
+to: {{file_name}}
+message: "File `{{file_name}}` was created successfully."
+===
 use insta::assert_debug_snapshot;
 use loco_rs::{model::ModelError, testing};
-use {{ package.name }}::{
+use {{ applicationName }}::{
     app::App,
     models::users::{self, Model, RegisterParams},
 };

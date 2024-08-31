@@ -1,7 +1,11 @@
+{% set file_name= rootFolder ~"/Cargo.toml" %}
+to: {{file_name}}
+message: "File `{{file_name}}` was created successfully."
+===
 [workspace]
 
 [package]
-name = "{{ package.name }}"
+name = "{{ applicationName }}"
 version = "0.1.0"
 edition = "2021"
 publish = false
@@ -38,7 +42,7 @@ unic-langid = "0.9.4"
 # /view engine
 
 [[bin]]
-name = "{{ package.name }}-cli"
+name = "{{ applicationName }}-cli"
 path = "src/bin/main.rs"
 required-features = []
 

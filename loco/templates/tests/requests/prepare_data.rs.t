@@ -1,6 +1,10 @@
+{% set file_name= rootFolder ~"/tests/requests/prepare_data.rs" %}
+to: {{file_name}}
+message: "File `{{file_name}}` was created successfully."
+===
 use axum::http::{HeaderName, HeaderValue};
 use loco_rs::{app::AppContext, TestServer};
-use {{ package.name }}::{models::users, views::auth::LoginResponse};
+use {{ applicationName }}::{models::users, views::auth::LoginResponse};
 
 const USER_EMAIL: &str = "test@loco.com";
 const USER_PASSWORD: &str = "1234";

@@ -1,17 +1,17 @@
-{% for entity in entities %}
+{% for entity in entities -%}
 {% set file_name = entity.title | snake_case -%}
 {% set module_name = file_name | pascal_case -%}
-to: src/controllers/{{ file_name }}.rs
-skip_exists: true
+to: {{ rootFolder }}/src/controllers/{{ file_name }}.rs
 message: "Controller `{{module_name}}` was added successfully."
 injections:
-- into: src/controllers/mod.rs
+- into: {{ rootFolder }}/src/controllers/mod.rs
+  create_if_missing: true
   append: true
   content: "pub mod {{ file_name }};"
-- into: src/app.rs
+- into: {{ rootFolder }}/src/app.rs
   after: "AppRoutes::"
   content: "            .add_route(controllers::{{ file_name }}::routes())"
----
+===
 #![allow(clippy::missing_errors_doc)]
 #![allow(clippy::unnecessary_struct_initialization)]
 #![allow(clippy::unused_async)]
@@ -23,16 +23,20 @@ use crate::models::_entities::{{file_name | plural}}::{ActiveModel, Entity, Mode
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Params {
-    {% for column in columns -%}
-    pub {{column.0}}: {{column.1}},
-    {% endfor -%}
+    {% for property_name, property in entity.properties -%}
+        {% if property.type -%}
+    pub {{ property_name }}: {% if entity.required and property_name in entity.required -%}Option<{% endif -%}{{ property.type }}{% if entity.required and property_name in entity.required -%}>{% endif -%}{% endif -%}{% if not loop.last -%},{% endif -%}
+        {%- endif %}
+    {% endfor %}
 }
 
 impl Params {
     fn update(&self, item: &mut ActiveModel) {
-      {% for column in columns -%}
-      item.{{column.0}} = Set(self.{{column.0}}.clone());
-      {% endfor -%}
+      {% for property_name, property in entity.properties -%}
+      {% if property.type -%}
+      item.{{property_name}} = Set(self.{{property_name}}.clone());
+      {% endif -%}
+      {% endfor %}
     }
 }
 
@@ -89,4 +93,5 @@ pub fn routes() -> Routes {
         .add("/:id", delete(remove))
         .add("/:id", post(update))
 }
-{% endfor %}
+---
+{% endfor -%}

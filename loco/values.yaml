@@ -1,5 +1,5 @@
-frontmatterSeparator: "---\n"
-documentSeparator: "===\n"
+frontmatterSeparator: "===\n"
+documentSeparator: "---\n"
 applicationName: "erp"
 applicationType: monolith
 authenticationType: jwt
