@@ -71,41 +71,97 @@
 {% for entity in entities -%}
 {% set file_name = entity.title | snake_case -%}
 {% set module_name = file_name | pascal_case -%}
-to: {{ rootFolder }}/src/controllers/{{ file_name }}.rs
-message: "Entity `{{module_name}}` was added successfully."
+to: {{ outputFolder }}/src/controllers/{{ file_name }}.rs
+message: "Controller `{{module_name}}` was added successfully."
 injections:
-- into: {{ rootFolder }}/src/controllers/mod.rs
+- into: {{ outputFolder }}/src/controllers/mod.rs
   create_if_missing: true
   append: true
   content: "pub mod {{ file_name }};"
+- into: {{ outputFolder }}/src/app.rs
+  after: "AppRoutes::"
+  content: "            .add_route(controllers::{{ file_name }}::routes())"
 ===
-use sea_orm::entity::prelude::*;
-use serde::{Serialize, Deserialize};
+#![allow(clippy::missing_errors_doc)]
+#![allow(clippy::unnecessary_struct_initialization)]
+#![allow(clippy::unused_async)]
+use loco_rs::prelude::*;
+use serde::{Deserialize, Serialize};
+use axum::debug_handler;
 
-#[derive(Clone, Debug, PartialEq, DeriveEntityModel, Eq, Serialize, Deserialize)]
-#[sea_orm(table_name = "{{ file_name | plural }}")]
-pub struct Model {
-    #[sea_orm(primary_key)]
-    pub id: i32,
-    pub created_at: DateTime,
-    pub updated_at: DateTime,
+use crate::models::_entities::{{file_name | plural}}::{ActiveModel, Entity, Model};
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub struct Params {
     {% for property_name, property in entity.properties -%}
         {% if property.type -%}
-    pub {{ property_name }}: {{ self::get_type(property_name=property_name, property=property) }}{% if not loop.last -%},{% endif -%}
-        {%- endif %}
+    pub {{ property_name }}: {{ self::get_type(property_name=property_name, property=property) }}
+        {% endif %}
     {% endfor %}
 }
 
-# #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
-# pub enum Relation {
-#     #[sea_orm(has_many = "super::files::Entity")]
-#     Files,
-# }
+impl Params {
+    fn update(&self, item: &mut ActiveModel) {
+      {% for property_name, property in entity.properties -%}
+      {% if property.type -%}
+      item.{{property_name}} = Set(self.{{property_name}}.clone());
+      {% endif -%}
+      {% endfor %}
+    }
+}
 
-# impl Related<super::files::Entity> for Entity {
-#     fn to() -> RelationDef {
-#         Relation::Files.def()
-#     }
-# }
+async fn load_item(ctx: &AppContext, id: i32) -> Result<Model> {
+    let item = Entity::find_by_id(id).one(&ctx.db).await?;
+    item.ok_or_else(|| Error::NotFound)
+}
+
+#[debug_handler]
+pub async fn list(State(ctx): State<AppContext>) -> Result<Response> {
+    format::json(Entity::find().all(&ctx.db).await?)
+}
+
+#[debug_handler]
+pub async fn add(State(ctx): State<AppContext>, Json(params): Json<Params>) -> Result<Response> {
+    let mut item = ActiveModel {
+        ..Default::default()
+    };
+    params.update(&mut item);
+    let item = item.insert(&ctx.db).await?;
+    format::json(item)
+}
+
+#[debug_handler]
+pub async fn update(
+    Path(id): Path<i32>,
+    State(ctx): State<AppContext>,
+    Json(params): Json<Params>,
+) -> Result<Response> {
+    let item = load_item(&ctx, id).await?;
+    let mut item = item.into_active_model();
+    params.update(&mut item);
+    let item = item.update(&ctx.db).await?;
+    format::json(item)
+}
+
+#[debug_handler]
+pub async fn remove(Path(id): Path<i32>, State(ctx): State<AppContext>) -> Result<Response> {
+    load_item(&ctx, id).await?.delete(&ctx.db).await?;
+    format::empty()
+}
+
+#[debug_handler]
+pub async fn get_one(Path(id): Path<i32>, State(ctx): State<AppContext>) -> Result<Response> {
+    format::json(load_item(&ctx, id).await?)
+}
+
+pub fn routes() -> Routes {
+    Routes::new()
+        .prefix("{{file_name | plural}}")
+        .add("/", get(list))
+        .add("/", post(add))
+        .add("/:id", get(get_one))
+        .add("/:id", delete(remove))
+        .add("/:id", post(update))
+}
 ---
 {% endfor -%}

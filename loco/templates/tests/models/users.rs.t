@@ -1,4 +1,4 @@
-{% set file_name= rootFolder ~"/tests/models/user.rs" %}
+{% set file_name= outputFolder ~"/tests/models/user.rs" %}
 to: {{file_name}}
 message: "File `{{file_name}}` was created successfully."
 ===

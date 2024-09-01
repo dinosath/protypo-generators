@@ -1,4 +1,4 @@
-{% set file_name= rootFolder ~"/Cargo.toml" %}
+{% set file_name= outputFolder ~"/Cargo.toml" %}
 to: {{file_name}}
 message: "File `{{file_name}}` was created successfully."
 ===
