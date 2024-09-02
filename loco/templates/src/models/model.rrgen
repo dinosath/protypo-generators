@@ -1,0 +1,18 @@
+{% for entity in entities -%}
+{% set file_name = entity.title | snake_case -%}
+{% set module_name = file_name | pascal_case -%}
+to: {{ outputFolder }}/src/models/{{ file_name }}.rs
+message: "Model `{{module_name}}` was created successfully."
+injections:
+- into: {{ outputFolder }}/src/models/mod.rs
+  append: true
+  content: "pub mod {{ file_name }};"
+===
+use sea_orm::entity::prelude::*;
+use super::_entities::{{ file_name | plural }}::ActiveModel;
+
+impl ActiveModelBehavior for ActiveModel {
+    // extend activemodel below (keep comment for generators)
+}
+---
+{% endfor -%}

@@ -1,72 +1,72 @@
-{% macro get_type(property_name, property) %}
-    {% set required = property.required and property_name not in property.required %}
-    {% if required %}Option<{% endif %}
+{%- macro get_type(property_name, property) -%}
+    {%- set required = property.required and property_name not in property.required -%}
+    {%- if required -%}Option<{%- endif -%}
     
     {# Handle string types with format, check if format exists first #}
-    {% if property.type and property.type == "string" %}
-        {% if property.format and property.format == "uuid" %}
+    {%- if property.type and property.type == "string" -%}
+        {%- if property.format and property.format == "uuid" -%}
             uuid::Uuid
-        {% elif property.format and property.format == "date-time" %}
+        {%- elif property.format and property.format == "date-time" -%}
             DateTimeWithTimeZone
-        {% elif property.format and property.format == "date" %}
+        {%- elif property.format and property.format == "date" -%}
             TimeDate
-        {% elif property.format and property.format == "time" %}
+        {%- elif property.format and property.format == "time" -%}
             TimeTime
-        {% else %}
+        {%- else -%}
             String
-        {% endif %}
+        {%- endif -%}
     
     {# Handle boolean type #}
-    {% elif property.type and property.type == "boolean" %}
+    {%- elif property.type and property.type == "boolean" -%}
         bool
-    {% elif property.type and property.type == "integer" %}
-        {% set min = property.minimum or property.exclusiveMinimum %}
-        {% set max = property.maximum or property.exclusiveMaximum %}
-        {% if min and min >= 0 %}
-            {% if max and max <= 255 %}
+    {%- elif property.type and property.type == "integer" -%}
+        {%- set min = property.minimum or property.exclusiveMinimum -%}
+        {%- set max = property.maximum or property.exclusiveMaximum -%}
+        {%- if min and min >= 0 -%}
+            {%- if max and max <= 255 -%}
                 u8
-            {% elif max and max <= 65535 %}
+            {%- elif max and max <= 65535 -%}
                 u16
-            {% elif max and max <= 4294967295 %}
+            {%- elif max and max <= 4294967295 -%}
                 u32
-            {% else %}
+            {%- else -%}
                 u64
-            {% endif %}
-        {% else %}
-            {% if max and max <= 127 %}
+            {%- endif -%}
+        {%- else -%}
+            {%- if max and max <= 127 -%}
                 i8
-            {% elif max and max <= 32767 %}
+            {%- elif max and max <= 32767 -%}
                 i16
-            {% elif max and max <= 2147483647 %}
+            {%- elif max and max <= 2147483647 -%}
                 i32
-            {% else %}
+            {%- else -%}
                 i64
-            {% endif %}
-        {% endif %}
+            {%- endif -%}
+        {%- endif -%}
     
     {# Handle number types (float) with min/max constraints #}
-    {% elif property.type and property.type == "number" %}
-        {% set min = property.minimum or property.exclusiveMinimum %}
-        {% set max = property.maximum or property.exclusiveMaximum %}
-        {% if min or max %}
-            {% if min and min >= -3.40282347 and max and max <= 3.40282347 %}
+    {%- elif property.type and property.type == "number" -%}
+        {%- set min = property.minimum or property.exclusiveMinimum -%}
+        {%- set max = property.maximum or property.exclusiveMaximum -%}
+        {%- if min or max -%}
+            {%- if min and min >= -3.40282347 and max and max <= 3.40282347 -%}
                 f32
-            {% else %}
+            {%- else -%}
                 f64
-            {% endif %}
-        {% else %}
+            {%- endif -%}
+        {%- else -%}
             f64
-        {% endif %}
+        {%- endif -%}
     
     {# Handle enums #}
-    {% elif property.enum %}
+    {%- elif property.enum -%}
         {{ property_name | capitalize }}
-    {% else %}
+    {%- else -%}
         String
-    {% endif %}
+    {%- endif -%}
     
-    {%- if required %}>{% endif %}
-{% endmacro %}
+    {%- if required -%}>{%- endif -%}
+{%- endmacro -%}
 
 {% for entity in entities -%}
 {% set file_name = entity.title | snake_case -%}
@@ -75,7 +75,6 @@ to: {{ outputFolder }}/src/controllers/{{ file_name }}.rs
 message: "Controller `{{module_name}}` was added successfully."
 injections:
 - into: {{ outputFolder }}/src/controllers/mod.rs
-  create_if_missing: true
   append: true
   content: "pub mod {{ file_name }};"
 - into: {{ outputFolder }}/src/app.rs
@@ -88,25 +87,25 @@ injections:
 use loco_rs::prelude::*;
 use serde::{Deserialize, Serialize};
 use axum::debug_handler;
-
+use sea_orm::prelude::{DateTimeWithTimeZone, TimeDate};
 use crate::models::_entities::{{file_name | plural}}::{ActiveModel, Entity, Model};
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Params {
-    {% for property_name, property in entity.properties -%}
-        {% if property.type -%}
-    pub {{ property_name }}: {{ self::get_type(property_name=property_name, property=property) }}
-        {% endif %}
-    {% endfor %}
+    {%- for property_name, property in entity.properties -%}
+        {%- if property.type -%}
+    pub {{ property_name }}: {{ self::get_type(property_name=property_name, property=property) }} {%- if not loop.last -%},{%- endif -%}
+        {%- endif -%}
+    {%- endfor -%}
 }
 
 impl Params {
     fn update(&self, item: &mut ActiveModel) {
       {% for property_name, property in entity.properties -%}
-      {% if property.type -%}
+      {%- if property.type -%}
       item.{{property_name}} = Set(self.{{property_name}}.clone());
-      {% endif -%}
-      {% endfor %}
+      {%- endif -%}
+      {%- endfor -%}
     }
 }
 

@@ -14,7 +14,7 @@ publish = false
 
 [dependencies]
 
-loco-rs = { version = "0.7.0" }
+loco-rs = { version = "0.8.1" }
 migration = { path = "migration" }
 
 serde = { version = "1", features = ["derive"] }
@@ -31,7 +31,9 @@ sea-orm = { version = "1.0.0", features = [
   "macros",
 ] }
 
-axum = "0.7.5"
+axum = { version = "0.7.5", features = ["multipart"] }
+axum_session = { version = "0.10.1", default-features = false }
+axum-extra = { version = "0.9", features = ["cookie"] }
 include_dir = "0.7"
 uuid = { version = "1.6.0", features = ["v4"] }
 tracing-subscriber = { version = "0.3.17", features = ["env-filter", "json"] }
