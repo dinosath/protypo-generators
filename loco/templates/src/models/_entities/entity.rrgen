@@ -13,31 +13,15 @@ injections:
 ===
 use sea_orm::entity::prelude::*;
 use serde::{Serialize, Deserialize};
-
 {{ self::seaorm_prelude_imports(entity=entity)|trim }}
-
-{%- set_global mto_relations = [] -%}
-{%- for name,property in entity.properties -%}
-    {%- if self::relation_is_many_to_one(property=property)=='true' -%}
-        {%- set relation = self::get_relation(property=property) | snake_case | plural -%}
-        {%- set_global mto_relations = mto_relations | concat(with=relation)  -%}
-    {%- endif -%}
-{%- endfor -%}
-
-{%- set_global otm_relations = [] -%}
-{%- for name,property in entity.properties -%}
-    {%- if self::relation_is_one_to_many(property=property)=='true' -%}
-        {%- set relation = self::get_relation(property=property) | snake_case | plural -%}
-        {%- set_global otm_relations = otm_relations | concat(with=relation)  -%}
-    {%- endif -%}
-{%- endfor -%}
-use crate::models::{ {{ mto_relations | concat(with=otm_relations) | unique | join(sep=",") }} };
 
 {% for name,property in entity.properties -%}
     {% if property.enum -%}
-#[derive(PartialEq, Clone, Debug, Eq)]
-enum {{ name | capitalize }}{
+#[derive(PartialEq, Clone, Debug, Eq, EnumIter, DeriveActiveEnum, Serialize, Deserialize)]
+#[sea_orm(rs_type = "String", db_type = "String(StringLen::None)", enum_name = "{{ name | snake_case }}")]
+enum {{ name | pascal_case }}{
         {% for enum in property.enum -%}
+        #[sea_orm(string_value = "{{ enum | snake_case }}")]
         {{ enum }}{%- if not loop.last -%},{% endif -%}
         {% endfor %}
 }
@@ -51,10 +35,8 @@ pub struct Model {
     pub id: i32,
     pub created_at: DateTime,
     pub updated_at: DateTime,
-    {%- for property_name, property in entity.properties %}
-        {%- if property.type or property.enum %}
-    pub {{ property_name }}: {{ self::get_type(name=property_name, property=property)|trim }}{%- if not loop.last -%},{% endif -%}
-        {% endif -%}
+    {%- for name, property in entity.properties %}
+    pub {{ self::get_name(name=name, property=property) | snake_case }}: {{ self::get_type(name=name, property=property) }}{%- if not loop.last -%},{% endif -%}
     {% endfor %}
 }
 
@@ -69,7 +51,7 @@ pub enum Relation {
     {% elif self::relation_is_many_to_one(property=property)=='true' -%}
         {% set relation = self::get_relation(property=property) | snake_case | plural -%}
     #[sea_orm(belongs_to = "crate::models::_entities::{{ relation }}::Entity",
-    from = "Column::{{ relation | title }}Id",
+    from = "Column::{{ self::get_name(name=name, property=property) | pascal_case }}",
     to = "crate::models::_entities::{{ relation }}::Column::Id")]
     {{ name | title }},
 

@@ -1,0 +1,74 @@
+{# generate controllers #}
+{% import "macros.tpl" as macros %}
+
+{% for entity in entities -%}
+{% set file_name = entity.title | snake_case -%}
+{% set module_name = file_name | pascal_case -%}
+{% set enum_name = file_name | pascal_case -%}
+to: {{ outputFolder }}/migration/src/{{ file_name }}.rs
+message: "Migration `{{module_name}}` was added successfully."
+injections:
+- into: {{ outputFolder }}/migration/src/lib.rs
+  after: "pub struct Migrator;"
+  content: "mod {{ file_name }};"
+- into: {{ outputFolder }}/migration/src/lib.rs
+  after: "vec!\\["
+  content: "Box::new({{ file_name }}::Migration),"
+===
+use loco_rs::schema::table_auto_tz;
+use sea_orm::{EnumIter, Iterable};
+use sea_orm_migration::{prelude::*, schema::*};
+
+#[derive(DeriveMigrationName)]
+pub struct Migration;
+
+#[async_trait::async_trait]
+impl MigrationTrait for Migration {
+    async fn up(&self, manager: &SchemaManager) -> Result<(), DbErr> {
+        manager
+            .create_table(
+                table_auto_tz({{ enum_name }}::Table)
+                .if_not_exists()
+                    .col(pk_auto({{ enum_name }}::Id))                    
+                    {% for name, property in entity.properties -%}
+                    .col({{macros::get_migration_type(name=name,property=property)}}(
+                    {{ enum_name }}::{{ name | pascal_case }}
+                    {% if property.enum %}
+                    ,Alias::new("{{ name | snake_case }}"),{{ name | pascal_case }}::iter()
+                    {% endif %}
+                    ))
+                    {% endfor %}
+                    .to_owned(),
+            )
+            .await
+    }
+
+    async fn down(&self, manager: &SchemaManager) -> Result<(), DbErr> {
+        manager
+            .drop_table(Table::drop().table({{ enum_name }}::Table).to_owned())
+            .await
+    }
+}
+
+{% for name, property in entity.properties -%}
+{% if property.enum %}
+#[derive(Iden, EnumIter)]
+pub enum {{ name | pascal_case }} {
+{% for enum in property.enum -%}
+#[iden = "{{ enum }}"]
+{{ enum }}{%- if not loop.last -%},{% endif -%}
+{% endfor %}
+}
+{% endif %}
+{% endfor %}
+
+#[derive(DeriveIden)]
+enum {{ enum_name }} {
+    Table,
+    Id,
+    {% for name, property in entity.properties -%}
+    {{ name | pascal_case }}{%- if not loop.last -%},{%- endif %}
+    {% endfor %}
+}
+---
+{% endfor -%}

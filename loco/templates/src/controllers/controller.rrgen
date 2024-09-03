@@ -25,19 +25,19 @@ use crate::models::_entities::{{file_name | plural}}::{ActiveModel, Entity, Mode
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Params {
-    {%- for property_name, property in entity.properties -%}
+    {%- for name, property in entity.properties -%}
         {%- if property.type -%}
-    pub {{ property_name }}: {{ macros::get_type(name=property_name, property=property) }} {%- if not loop.last -%},{%- endif -%}
-        {%- endif -%}
+    pub {{ macros::get_name(name=name, property=property) | snake_case }}: {{ macros::get_type(name=name, property=property) }} {%- if not loop.last -%},{%- endif %}
+        {% endif -%}
     {%- endfor -%}
 }
 
 impl Params {
     fn update(&self, item: &mut ActiveModel) {
-      {% for property_name, property in entity.properties -%}
+      {% for name, property in entity.properties -%}
       {%- if property.type  -%}
-      item.{{property_name}} = Set(self.{{property_name}}.clone());
-      {%- endif -%}
+      item.{{ macros::get_name(name=name, property=property) | snake_case }} = Set(self.{{ macros::get_name(name=name, property=property) | snake_case }}.clone());
+      {% endif -%}
       {%- endfor -%}
     }
 }

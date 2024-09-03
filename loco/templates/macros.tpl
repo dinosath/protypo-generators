@@ -1,4 +1,64 @@
-
+{%- macro get_migration_type(name, property) -%}
+{% filter trim %}
+    {% if property.type and property.type == "string" -%}
+        {% if property.format and property.format == "uuid" -%}
+            uuid
+        {% elif property.format and property.format == "date-time" -%}
+            date_time
+        {% elif property.format and property.format == "date" -%}
+            date_time
+        {% elif property.format and property.format == "time" -%}
+            time
+        {% else -%}
+            string
+        {% endif -%}    
+    {% elif property.type and property.type == "boolean" -%}
+        boolean
+    {% elif property.type and property.type == "integer" -%}
+        {% set min = property.minimum or property.exclusiveMinimum -%}
+        {% set max = property.maximum or property.exclusiveMaximum -%}
+        {% if min and min >= 0 -%}
+            {% if max and max <= 255 -%}
+                tiny_unsigned
+            {% elif max and max <= 65535 -%}
+                small_unsigned
+            {% elif max and max <= 4294967295 -%}
+                unsigned
+            {% else -%}
+                big_unsigned
+            {% endif -%}
+        {% else -%}
+            {% if max and max <= 127 -%}
+                tiny_integer
+            {% elif max and max <= 32767 -%}
+                small_integer
+            {% elif max and max <= 2147483647 -%}
+                integer
+            {% else -%}
+                big_integer
+            {% endif -%}
+        {% endif -%}
+    {% elif property.type and property.type == "number" -%}
+        {% set min = property.minimum or property.exclusiveMinimum -%}
+        {% set max = property.maximum or property.exclusiveMaximum -%}
+        {% if min or max -%}
+            {% if min and min >= -3.40282347 and max and max <= 3.40282347 -%}
+                float
+            {% else -%}
+                double
+            {% endif -%}
+        {% else -%}
+            double
+        {% endif -%}
+    {% elif property.enum %}
+        enumeration
+    {% elif property['x-relationship'] and property['$ref'] %}
+        unsigned
+    {% else -%}
+        string
+    {% endif -%}
+{% endfilter %}
+{%- endmacro -%}
 
 {%- macro get_type(name, property) -%}
 {% filter trim %}
@@ -55,13 +115,26 @@
             f64
         {% endif -%}
     {% elif property.enum %}
-        {{ name | capitalize }}
+        {{ name | pascal_case }}
+    {% elif property['x-relationship'] and property['$ref'] %}
+        i32
     {% else -%}
         String
     {% endif -%}
     {%- if required -%}>{% endif -%}
 {% endfilter %}
 {%- endmacro -%}
+
+
+{%- macro get_name(name, property) -%}
+{% filter trim %}
+{% if property['x-relationship'] and property['$ref'] %}
+    {% set name = name~"Id" -%}
+{% endif -%}
+{{ name }}
+{% endfilter %}
+{%- endmacro -%}
+
 
 {%- macro get_relation(property) -%}
     {% if property['$ref'] -%}
@@ -91,15 +164,15 @@
 
 {%- macro seaorm_prelude_imports(entity) -%}
 {%- set possible_imports = ['DateTimeWithTimeZone','TimeDate','TimeTime'] -%}
-{%- set imports = [] -%}
+{%- set_global use_imports = [] -%}
 {% for name,property in entity.properties -%}
     {%- set type = self::get_type(name=name, property=property) -%}
-    {% if type in possible_imports -%}
-        {%- set imports = imports | concat(with=type) -%}
+    {% if type in possible_imports and type not in use_imports -%}
+        {%- set_global use_imports = use_imports | concat(with=type) -%}
     {% endif -%}
 {% endfor -%}
-{%- if imports | length >0 -%}
-{{ "use sea_orm::prelude::{"~ imports ~"};"}}
-{% else %}
-{%- endif %}
+{% if use_imports | length > 0 -%}
+{%- set use_imports_str = use_imports | join(sep=",") -%}
+{{ "use sea_orm::prelude::{" ~ use_imports_str ~ "};"}}
+{% endif -%}
 {%- endmacro -%}
