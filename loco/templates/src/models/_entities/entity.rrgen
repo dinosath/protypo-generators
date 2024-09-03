@@ -1,73 +1,5 @@
-{%- macro get_type(name, property) -%}
-    {% set required = property.required and name not in property.required -%}
-    {% if required -%}Option<{% endif -%}
-    {% if property.type and property.type == "string" -%}
-        {% if property.format and property.format == "uuid" -%}
-            uuid::Uuid
-        {% elif property.format and property.format == "date-time" -%}
-            DateTimeWithTimeZone
-        {% elif property.format and property.format == "date" -%}
-            TimeDate
-        {% elif property.format and property.format == "time" -%}
-            TimeTime
-        {% else -%}
-            String
-        {% endif -%}    
-    {% elif property.type and property.type == "boolean" -%}
-        bool
-    {% elif property.type and property.type == "integer" -%}
-        {% set min = property.minimum or property.exclusiveMinimum -%}
-        {% set max = property.maximum or property.exclusiveMaximum -%}
-        {% if min and min >= 0 -%}
-            {% if max and max <= 255 -%}
-                u8
-            {% elif max and max <= 65535 -%}
-                u16
-            {% elif max and max <= 4294967295 -%}
-                u32
-            {% else -%}
-                u64
-            {% endif -%}
-        {% else -%}
-            {% if max and max <= 127 -%}
-                i8
-            {% elif max and max <= 32767 -%}
-                i16
-            {% elif max and max <= 2147483647 -%}
-                i32
-            {% else -%}
-                i64
-            {% endif -%}
-        {% endif -%}
-    {% elif property.type and property.type == "number" -%}
-        {% set min = property.minimum or property.exclusiveMinimum -%}
-        {% set max = property.maximum or property.exclusiveMaximum -%}
-        {% if min or max -%}
-            {% if min and min >= -3.40282347 and max and max <= 3.40282347 -%}
-                f32
-            {% else -%}
-                f64
-            {% endif -%}
-        {% else -%}
-            f64
-        {% endif -%}
-    {% elif property.enum %}
-        {{ name | capitalize }}
-    {% else -%}
-        String
-    {% endif -%}
-    {%- if required -%}>{% endif -%}
-{%- endmacro -%}
-
-{%- macro get_relation(property) -%}
-    {% if property['$ref'] -%}
-    {{ property['$ref'] | split(pat="/")|last }}
-    {%- endif -%}
-{%- endmacro -%}
-
-{%- macro relation_is_m2m(property) -%}
-{{ property['x-relationship'] and property['x-relationship']['side'] and property['x-relationship']['side'] == "left" and property['x-relationship']['type'] and property['x-relationship']['type']=="many-to-one"}}
-{%- endmacro -%}
+{# generate entities #}
+{% import "macros.tpl" as macros %}
 
 {% for entity in entities -%}
 {% set file_name = entity.title | snake_case -%}
@@ -80,9 +12,26 @@ injections:
   content: "pub mod {{ file_name | plural }};"
 ===
 use sea_orm::entity::prelude::*;
-use sea_orm::prelude::{DateTimeWithTimeZone, TimeDate};
 use serde::{Serialize, Deserialize};
 
+{{ self::seaorm_prelude_imports(entity=entity)|trim }}
+
+{%- set_global mto_relations = [] -%}
+{%- for name,property in entity.properties -%}
+    {%- if self::relation_is_many_to_one(property=property)=='true' -%}
+        {%- set relation = self::get_relation(property=property) | snake_case | plural -%}
+        {%- set_global mto_relations = mto_relations | concat(with=relation)  -%}
+    {%- endif -%}
+{%- endfor -%}
+
+{%- set_global otm_relations = [] -%}
+{%- for name,property in entity.properties -%}
+    {%- if self::relation_is_one_to_many(property=property)=='true' -%}
+        {%- set relation = self::get_relation(property=property) | snake_case | plural -%}
+        {%- set_global otm_relations = otm_relations | concat(with=relation)  -%}
+    {%- endif -%}
+{%- endfor -%}
+use crate::models::{ {{ mto_relations | concat(with=otm_relations) | unique | join(sep=",") }} };
 
 {% for name,property in entity.properties -%}
     {% if property.enum -%}
@@ -95,7 +44,7 @@ enum {{ name | capitalize }}{
     {% endif -%}
 {% endfor %}
 
-#[derive(Clone, Debug, PartialEq, DeriveEntityModel, Eq, Serialize, Deserialize)]
+#[derive(Clone, Debug, PartialEq, DeriveEntityModel, Serialize, Deserialize)]
 #[sea_orm(table_name = "{{ file_name | plural }}")]
 pub struct Model {
     #[sea_orm(primary_key)]
@@ -109,40 +58,45 @@ pub struct Model {
     {% endfor %}
 }
 
-{% set_global has_relationship = false -%}
-{% for name,property in entity.properties -%}
-    {% if self::relation_is_m2m(property=property)=='true' -%}
-        {% set_global has_relationship = true -%}
-        {% break -%}
-    {% endif -%}
-{% endfor -%}
-
-{% if has_relationship -%}
-
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
 pub enum Relation {
-    {% for name,property in entity.properties -%}
-        {% if self::relation_is_m2m(property=property)=='true' -%}
-        {% set relation = self::get_relation(property=property) -%}
-    #[sea_orm(belongs_to = "super::{{ relation | snake_case }}::Entity",from = "Column::{{ relation | title }}Id",to = "super::{{ relation | snake_case }}::Column::Id")]
+{% for name,property in entity.properties -%}
+    {% if self::relation_is_one_to_many(property=property)=='true' -%}
+        {% set relation = self::get_relation(property=property) | snake_case | plural -%}
+    #[sea_orm(has_many = "crate::models::_entities::{{ relation }}::Entity")]
+    {{ name | title }},    
+
+    {% elif self::relation_is_many_to_one(property=property)=='true' -%}
+        {% set relation = self::get_relation(property=property) | snake_case | plural -%}
+    #[sea_orm(belongs_to = "crate::models::_entities::{{ relation }}::Entity",
+    from = "Column::{{ relation | title }}Id",
+    to = "crate::models::_entities::{{ relation }}::Column::Id")]
     {{ name | title }},
-        {% endif %}
-    {% endfor %}
+
+    {% endif %}
+{% endfor -%}
 }
 
-    {% for name,property in entity.properties -%}
-        {%- if self::relation_is_m2m(property=property)=='true' -%}
-        {% set relation = self::get_relation(property=property) %}
-impl Related<super::{{ relation | snake_case | plural }}::Entity> for Entity {
+{%- set_global implemented_relations = [] -%}
+{% for name,property in entity.properties -%}
+    {% set relation = self::get_relation(property=property) | snake_case | plural -%}
+    {% if self::relation_is_one_to_many(property=property)=='true' and relation not in implemented_relations -%}
+        
+impl Related<crate::models::_entities::{{ relation }}::Entity> for Entity {
     fn to() -> RelationDef {
-        Relation::{{ name | capitalize }}.def()
+        Relation::{{ name | title }}.def()
     }
 }
-        {% endif %}
-    {% endfor %}
-{% else %}
-#[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
-pub enum Relation {}
-{% endif %}
+        {%- set_global implemented_relations = implemented_relations | concat(with=relation)  -%}
+    {%- elif self::relation_is_many_to_one(property=property)=='true' and relation not in implemented_relations -%}
+        
+impl Related<crate::models::_entities::{{ relation }}::Entity> for Entity {
+    fn to() -> RelationDef {
+        Relation::{{ name | title }}.def()
+    }
+}
+        {%- set_global implemented_relations = implemented_relations | concat(with=relation)  -%}
+    {% endif %}
+{% endfor %}
 ---
 {% endfor -%}

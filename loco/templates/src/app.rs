@@ -8,7 +8,7 @@ use loco_rs::{
     db::{self, truncate_table},
     environment::Environment,
     task::Tasks,
-    worker::{AppWorker, Processor},
+    worker::{Processor},
     Result,
 };
 use migration::Migrator;
@@ -38,6 +38,9 @@ impl Hooks for App {
     }
 
     async fn initializers(_ctx: &AppContext) -> Result<Vec<Box<dyn Initializer>>> {
+        Ok(vec![
+
+        ])
     }
 
     fn routes(_ctx: &AppContext) -> AppRoutes {
