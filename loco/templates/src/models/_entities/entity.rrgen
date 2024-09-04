@@ -84,6 +84,21 @@ impl Related<crate::models::_entities::{{ relation }}::Entity> for Entity {
         {%- set_global implemented_relations = implemented_relations | concat(with=relation)  -%}
     {% endif %}
 {% endfor %}
+
+{%- if features and 'graphql' in features  -%}
+#[derive(Copy, Clone, Debug, EnumIter, DeriveRelatedEntity)]
+pub enum RelatedEntity {
+    {% for name,property in entity.properties -%}
+        {%- if property['x-relationship'] -%}        
+            {% set relation = self::get_relation(property=property) | snake_case | plural -%}
+            #[sea_orm(entity = "crate::models::_entities::{{relation}}::Entity")]
+            {{ name | pascal_case }}
+            {%- if not loop.last -%},{% endif -%}
+        {% endif -%}    
+    {% endfor %}   
+}
+{% endif %}
+
 ---
 {% endif %}
 {% endfor -%}

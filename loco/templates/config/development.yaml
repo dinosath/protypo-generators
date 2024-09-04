@@ -33,7 +33,7 @@ server:
       body_limit: 5mb
     # set secure headers
     secure_headers:
-      preset: github
+      preset: empty
     # calculate remote IP based on `X-Forwarded-For` when behind a proxy or load balancer
     # use RemoteIP(..) extractor to get the remote IP.
     # without this middleware, you'll get the proxy IP instead.

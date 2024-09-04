@@ -13,7 +13,6 @@ publish = false
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-
 loco-rs = { version = "0.8.1" }
 migration = { path = "migration" }
 
@@ -41,7 +40,15 @@ tracing-subscriber = { version = "0.3.17", features = ["env-filter", "json"] }
 # view engine i18n
 fluent-templates = { version = "0.8.0", features = ["tera"] }
 unic-langid = "0.9.4"
-# /view engine
+
+{% if features and 'graphql' in features  %}
+seaography = { version = "1.0.0-rc.4", features = ["with-decimal", "with-chrono"] }
+async-graphql = { version = "7.0", features = ["decimal", "chrono", "dataloader", "dynamic-schema"] }
+async-graphql-axum = { version = "7.0" }
+lazy_static = { version = "1.4" }
+tower-service = { version = "0.3" }
+{% endif %}
+
 
 [[bin]]
 name = "{{ applicationName }}-cli"
