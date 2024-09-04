@@ -1,0 +1,51 @@
+{# generate model ui #}
+{% import "macros_front.tpl" as macros %}
+
+{% for entity in entities -%}
+{% if entity.properties %}
+{% set file_name = entity.title | snake_case -%}
+{% set module_name = file_name | pascal_case -%}
+to: {{ outputFolder }}/frontend/src/models/{{ entity.title | plural | snake_case }}.tsx
+message: "File for ui `{{module_name}}` was created successfully."
+===
+import { Create, List, Datagrid, TextField, ReferenceField, EditButton, Edit, SimpleForm, ReferenceInput, TextInput } from "react-admin";
+
+const {{ entity.title | camel_case }}Filters = [
+    <TextInput source="q" label="Search" alwaysOn />,
+];
+
+
+export const {{ entity.title | pascal_case }}List = () => (
+    <List filters={ {{ entity.title | camel_case }}Filters}>
+        <Datagrid rowClick={false}>
+            {% for name,property in entity.properties -%}
+            <{{ macros::get_field(property=property) }} source="{{name}}" />
+            {% endfor %}
+            <EditButton />
+        </Datagrid>
+    </List>
+);
+
+export const {{ entity.title | pascal_case }}Edit = () => (
+    <Edit>
+        <SimpleForm>
+        {% for name,property in entity.properties -%}
+            <{{ macros::get_input_field(property=property) }} source="{{name}}" />
+        {% endfor %}
+        </SimpleForm>
+    </Edit>
+);
+
+export const {{ entity.title | pascal_case }}Create = () => (
+      <Create>
+        <SimpleForm>
+        {% for name,property in entity.properties -%}
+            <{{ macros::get_input_field(property=property) }} source="{{name}}" />
+        {% endfor %}
+        </SimpleForm>
+      </Create>
+);
+
+---
+{% endif %}
+{% endfor -%}

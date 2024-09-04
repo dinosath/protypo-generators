@@ -1,0 +1,26 @@
+to: {{ outputFolder }}/frontend/src/index.tsx
+message: "File for ui `index.tsx` was created successfully."
+===
+import React from "react";
+import ReactDOM from "react-dom/client";
+import { App } from "./App";
+
+import { Admin, Resource } from "react-admin";
+import { dataProvider } from './dataProvider';
+{% for entity in entities -%}
+{% if not entity.properties %}{% continue %}{% endif %}
+import { {{ entity.title | pascal_case }}List, {{ entity.title | pascal_case }}Edit, {{ entity.title | pascal_case }}Create } from "./models/{{entity.title | plural | snake_case}}";
+{% endfor %}
+import { Dashboard } from "./Dashboard";
+
+
+ReactDOM.createRoot(document.getElementById("root")!).render(
+  <Admin dataProvider={dataProvider} dashboard={Dashboard}>
+  {% for entity in entities -%}
+  {% if not entity.properties %}{% continue %}{% endif %}
+      <Resource name="{{ entity.title | plural | snake_case }}" list={ {{ entity.title | pascal_case }}List} edit={ {{ entity.title | pascal_case }}Edit} create={ {{ entity.title | pascal_case }}Create}/>
+  {% endfor %}
+      
+  </Admin>
+  
+);
