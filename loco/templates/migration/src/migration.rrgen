@@ -4,7 +4,7 @@
 {% for entity in entities -%}
 {% set file_name = entity.title | snake_case -%}
 {% set module_name = file_name | pascal_case -%}
-{% set enum_name = file_name | pascal_case -%}
+{% set enum_name = entity.title | plural | pascal_case -%}
 to: {{ outputFolder }}/migration/src/{{ file_name }}.rs
 message: "Migration `{{module_name}}` was added successfully."
 injections:

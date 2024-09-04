@@ -33,7 +33,7 @@ enum {{ name | pascal_case }}{
 {% endfor %}
 
 #[derive(Clone, Debug, PartialEq, DeriveEntityModel, Serialize, Deserialize)]
-#[sea_orm(schema_name="public", table_name = "{{ file_name | plural }}")]
+#[sea_orm(schema_name="public", table_name = "{{ entity.title | plural | snake_case }}")]
 pub struct Model {
     #[sea_orm(primary_key)]
     pub id: i32,
