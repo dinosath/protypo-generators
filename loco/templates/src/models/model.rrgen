@@ -1,5 +1,6 @@
 {# generate models #}
 {% for entity in entities -%}
+{% if entity.properties %}
 {% set file_name = entity.title | snake_case -%}
 {% set module_name = file_name | pascal_case -%}
 to: {{ outputFolder }}/src/models/{{ file_name | plural }}.rs
@@ -16,4 +17,5 @@ impl ActiveModelBehavior for ActiveModel {
     // extend activemodel below (keep comment for generators)
 }
 ---
+{% endif %}
 {% endfor -%}

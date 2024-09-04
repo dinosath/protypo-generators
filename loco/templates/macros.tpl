@@ -116,6 +116,8 @@
         {% endif -%}
     {% elif property.enum %}
         {{ name | pascal_case }}
+    {% elif property['$ref'] and not property['x-relationship']  %}
+        {{ name | pascal_case }}    
     {% elif property['x-relationship'] and property['$ref'] %}
         i32
     {% else -%}
@@ -161,6 +163,15 @@
 {{ has_many_to_one_relation }}
 {%- endmacro -%}
 
+{%- macro enum_imports(entity) -%}
+{% for name,property in entity.properties -%}
+    {% if property['$ref'] and not property['x-relationship'] -%}
+        {%- set type = self::get_type(name=name,property=property) | snake_case-%}
+        {%- set type_pascal = type | pascal_case -%}
+        {{ "use crate::models::enums::" ~ type ~ "::{" ~ type_pascal ~ "};" }}
+    {% endif -%}
+{% endfor -%}
+{%- endmacro -%}
 
 {%- macro seaorm_prelude_imports(entity) -%}
 {%- set possible_imports = ['DateTimeWithTimeZone','TimeDate','TimeTime'] -%}

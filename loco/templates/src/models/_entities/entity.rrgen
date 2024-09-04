@@ -2,6 +2,8 @@
 {% import "macros.tpl" as macros %}
 
 {% for entity in entities -%}
+{% if entity.properties %}
+
 {% set file_name = entity.title | snake_case -%}
 {% set module_name = file_name | pascal_case -%}
 to: {{ outputFolder }}/src/models/_entities/{{ file_name | plural }}.rs
@@ -13,6 +15,8 @@ injections:
 ===
 use sea_orm::entity::prelude::*;
 use serde::{Serialize, Deserialize};
+
+{{ self::enum_imports(entity=entity) }}
 {{ self::seaorm_prelude_imports(entity=entity)|trim }}
 
 {% for name,property in entity.properties -%}
@@ -29,7 +33,7 @@ enum {{ name | pascal_case }}{
 {% endfor %}
 
 #[derive(Clone, Debug, PartialEq, DeriveEntityModel, Serialize, Deserialize)]
-#[sea_orm(table_name = "{{ file_name | plural }}")]
+#[sea_orm(schema_name="public", table_name = "{{ file_name | plural }}")]
 pub struct Model {
     #[sea_orm(primary_key)]
     pub id: i32,
@@ -81,4 +85,5 @@ impl Related<crate::models::_entities::{{ relation }}::Entity> for Entity {
     {% endif %}
 {% endfor %}
 ---
+{% endif %}
 {% endfor -%}
