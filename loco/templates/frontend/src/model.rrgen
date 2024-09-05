@@ -19,7 +19,7 @@ export const {{ entity.title | pascal_case }}List = () => (
     <List filters={ {{ entity.title | camel_case }}Filters}>
         <Datagrid rowClick={false}>
             {% for name,property in entity.properties -%}
-            <{{ macros::get_field(property=property) }} source="{{name}}" />
+            <{{ macros::get_field(property=property) }} source="{{name|snake_case}}" />
             {% endfor %}
             <EditButton />
         </Datagrid>
@@ -30,7 +30,7 @@ export const {{ entity.title | pascal_case }}Edit = () => (
     <Edit>
         <SimpleForm>
         {% for name,property in entity.properties -%}
-            <{{ macros::get_input_field(property=property) }} source="{{name}}" />
+            <{{ macros::get_input_field(property=property) }} source="{{name|snake_case}}" />
         {% endfor %}
         </SimpleForm>
     </Edit>
@@ -40,7 +40,7 @@ export const {{ entity.title | pascal_case }}Create = () => (
       <Create>
         <SimpleForm>
         {% for name,property in entity.properties -%}
-            <{{ macros::get_input_field(property=property) }} source="{{name}}" />
+            <{{ macros::get_input_field(property=property) }} source="{{name|snake_case}}" />
         {% endfor %}
         </SimpleForm>
       </Create>

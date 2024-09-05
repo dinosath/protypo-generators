@@ -8,12 +8,13 @@ pub use super::_entities::users::{self, ActiveModel, Entity, Model};
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct LoginParams {
-    pub email: String,
+    pub username: String,
     pub password: String,
 }
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct RegisterParams {
+    pub username: String,
     pub email: String,
     pub password: String,
     pub name: String,
@@ -74,6 +75,23 @@ impl Authenticable for super::_entities::users::Model {
 }
 
 impl super::_entities::users::Model {
+    /// finds a user by the provided username
+    ///
+    /// # Errors
+    ///
+    /// When could not find user by the given token or DB query error
+    pub async fn find_by_username(db: &DatabaseConnection, username: &str) -> ModelResult<Self> {
+        let user = users::Entity::find()
+            .filter(
+                model::query::condition()
+                    .eq(users::Column::Username, username)
+                    .build(),
+            )
+            .one(db)
+            .await?;
+        user.ok_or_else(|| ModelError::EntityNotFound)
+    }
+
     /// finds a user by the provided email
     ///
     /// # Errors
@@ -189,6 +207,7 @@ impl super::_entities::users::Model {
             .filter(
                 model::query::condition()
                     .eq(users::Column::Email, &params.email)
+                    .eq(users::Column::Username, &params.username)
                     .build(),
             )
             .one(&txn)
@@ -201,6 +220,7 @@ impl super::_entities::users::Model {
         let password_hash =
             hash::hash_password(&params.password).map_err(|e| ModelError::Any(e.into()))?;
         let user = users::ActiveModel {
+            username: ActiveValue::set(params.username.to_string()),
             email: ActiveValue::set(params.email.to_string()),
             password: ActiveValue::set(password_hash),
             name: ActiveValue::set(params.name.to_string()),

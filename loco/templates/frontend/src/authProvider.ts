@@ -1,11 +1,9 @@
-import { AuthProvider, HttpError } from "react-admin";
-import data from "./users.json";
-
 const url="http://localhost:5150";
 
 const authProvider = {
+
   login: ({ username, password }) =>  {
-    const request = new Request(`${url}/api/auth/login`, {
+      const request = new Request(`${url}/api/auth/login`, {
       method: 'POST',
       body: JSON.stringify({ username, password }),
       headers: new Headers({ 'Content-Type': 'application/json' }),
@@ -18,7 +16,10 @@ const authProvider = {
           return response.json();
         })
         .then(auth => {
-          localStorage.setItem('auth', JSON.stringify(auth));
+            console.log("auth:", JSON.stringify(auth));
+            let token = `Bearer ${auth.token}`;
+            console.log("token:", token);
+          localStorage.setItem('token', token);
         })
         .catch(() => {
           throw new Error('Network error')
@@ -28,9 +29,12 @@ const authProvider = {
     localStorage.removeItem('username');
     return Promise.resolve();
   },
-  checkAuth: () => localStorage.getItem('auth')
+  checkAuth: () => {
+    return localStorage.getItem('token')
       ? Promise.resolve()
-      : Promise.reject(),
+      : Promise.reject();
+
+  },
   getPermissions: () => {
     // Required for the authentication to work
     return Promise.resolve();

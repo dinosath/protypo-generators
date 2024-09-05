@@ -37,8 +37,8 @@ enum {{ name | pascal_case }}{
 pub struct Model {
     #[sea_orm(primary_key)]
     pub id: i32,
-    pub created_at: DateTime,
-    pub updated_at: DateTime,
+    pub created_at: DateTimeWithTimeZone,
+    pub updated_at: DateTimeWithTimeZone,
     {%- for name, property in entity.properties %}
     pub {{ self::get_name(name=name, property=property) | snake_case }}: {{ self::get_type(name=name, property=property) }}{%- if not loop.last -%},{% endif -%}
     {% endfor %}

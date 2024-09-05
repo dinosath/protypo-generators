@@ -14,7 +14,7 @@ use loco_rs::{
 use migration::Migrator;
 use sea_orm::DatabaseConnection;
 
-use crate::{controllers, models::_entities::{notes, users}};
+use crate::{controllers, models::_entities::{users}};
 
 pub struct App;
 #[async_trait]
@@ -45,7 +45,6 @@ impl Hooks for App {
 
     fn routes(_ctx: &AppContext) -> AppRoutes {
         AppRoutes::with_default_routes().prefix("/api")
-            .add_route(controllers::notes::routes())
             .add_route(controllers::auth::routes())
             .add_route(controllers::user::routes())
     }

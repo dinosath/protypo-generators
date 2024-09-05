@@ -62,8 +62,8 @@
 
 {%- macro get_type(name, property) -%}
 {% filter trim %}
-    {% set required = property.required and name not in property.required -%}
-    {% if required -%}Option<{% endif -%}
+    {% set required = property.required and name in property.required -%}
+    {% if not required -%}Option<{% endif -%}
     {% if property.type and property.type == "string" -%}
         {% if property.format and property.format == "uuid" -%}
             uuid::Uuid
@@ -123,7 +123,7 @@
     {% else -%}
         String
     {% endif -%}
-    {%- if required -%}>{% endif -%}
+    {%- if not required -%}>{% endif -%}
 {% endfilter %}
 {%- endmacro -%}
 
@@ -143,6 +143,11 @@
     {{ property['$ref'] | split(pat=".")|first }}
     {%- endif -%}
 {%- endmacro -%}
+
+{%- macro get_relation_from_string(string) -%}
+{{ string | split(pat=".") | first }}
+{%- endmacro -%}
+
 
 {%- macro relation_is_many_to_one(property) -%}
 {{ property['x-relationship'] and property['x-relationship']=="many-to-one"}}
