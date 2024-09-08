@@ -49,21 +49,19 @@ impl Hooks for App {
             .add_route(controllers::user::routes())
     }
 
-    fn connect_workers<'a>(p: &'a mut Processor, ctx: &'a AppContext) {
+    fn connect_workers<'a>(_p: &'a mut Processor, _ctx: &'a AppContext) {
     }
 
-    fn register_tasks(tasks: &mut Tasks) {
+    fn register_tasks(_tasks: &mut Tasks) {
     }
 
     async fn truncate(db: &DatabaseConnection) -> Result<()> {
         truncate_table(db, users::Entity).await?;
-        truncate_table(db, notes::Entity).await?;
         Ok(())
     }
 
     async fn seed(db: &DatabaseConnection, base: &Path) -> Result<()> {
         db::seed::<users::ActiveModel>(db, &base.join("users.yaml").display().to_string()).await?;
-        db::seed::<notes::ActiveModel>(db, &base.join("notes.yaml").display().to_string()).await?;
         Ok(())
     }
 }

@@ -29,7 +29,7 @@ use crate::models::_entities::{{file_name | plural}}::{ActiveModel, Entity, Mode
 pub struct Params {
     {%- for name, property in entity.properties -%}
         {%- if property.type -%}
-    pub {{ macros::get_name(name=name, property=property) | snake_case }}: {{ macros::get_type(name=name, property=property) }} {%- if not loop.last -%},{%- endif %}
+    pub {{ macros::get_name(name=name, property=property) | snake_case }}: {{ macros::get_type_with_option(name=name, property=property, required_fields=entity.required) }} {%- if not loop.last -%},{%- endif %}
         {% endif -%}
     {%- endfor -%}
 }

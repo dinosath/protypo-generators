@@ -40,7 +40,7 @@ pub struct Model {
     pub created_at: DateTimeWithTimeZone,
     pub updated_at: DateTimeWithTimeZone,
     {%- for name, property in entity.properties %}
-    pub {{ self::get_name(name=name, property=property) | snake_case }}: {{ self::get_type(name=name, property=property) }}{%- if not loop.last -%},{% endif -%}
+    pub {{ self::get_name(name=name, property=property) | snake_case }}: {{ self::get_type_with_option(name=name, property=property, required_fields=entity.required) }}{%- if not loop.last -%},{% endif -%}
     {% endfor %}
 }
 

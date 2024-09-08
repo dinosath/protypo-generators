@@ -62,8 +62,6 @@
 
 {%- macro get_type(name, property) -%}
 {% filter trim %}
-    {% set required = property.required and name in property.required -%}
-    {% if not required -%}Option<{% endif -%}
     {% if property.type and property.type == "string" -%}
         {% if property.format and property.format == "uuid" -%}
             uuid::Uuid
@@ -123,10 +121,17 @@
     {% else -%}
         String
     {% endif -%}
-    {%- if not required -%}>{% endif -%}
+    
 {% endfilter %}
 {%- endmacro -%}
 
+
+{%- macro get_type_with_option(name, property, required_fields) -%}
+{% set required = required_fields and name and name in required_fields -%}
+{% if not required -%}Option<{% endif -%}
+{{self::get_type(name=name,property=property)}}
+{%- if not required -%}>{% endif -%}
+{%- endmacro -%}
 
 {%- macro get_name(name, property) -%}
 {% filter trim %}

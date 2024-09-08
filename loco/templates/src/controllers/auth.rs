@@ -1,14 +1,20 @@
 use loco_rs::{controller::bad_request, prelude::*};
 use serde::{Deserialize, Serialize};
 
-use crate::{
-    mailers::auth::AuthMailer,
-    models::{
-        _entities::users,
-        users::{LoginParams, RegisterParams},
-    },
-    views::auth::UserSession,
-};
+use crate::{models::{_entities::users}};
+
+#[derive(Debug, Deserialize, Serialize)]
+pub struct LoginParams {
+    pub username: String,
+    pub password: String,
+}
+
+#[derive(Debug, Deserialize, Serialize)]
+pub struct RegisterParams {
+    pub email: String,
+    pub password: String,
+    pub name: String,
+}
 #[derive(Debug, Deserialize, Serialize)]
 pub struct VerifyParams {
     pub token: String,
@@ -23,6 +29,32 @@ pub struct ForgotParams {
 pub struct ResetParams {
     pub token: String,
     pub password: String,
+}
+
+#[derive(Debug, Deserialize, Serialize)]
+pub struct LoginResponse {
+    pub token: String,
+    pub user: UserDetail,
+}
+#[derive(Debug, Deserialize, Serialize)]
+pub struct UserDetail {
+    pub email: String,
+    pub username: String,
+    pub last_login: String,
+}
+
+impl LoginResponse {
+    #[must_use]
+    pub fn new(user: &users::Model, token: &String) -> Self {
+        Self {
+            token: token.to_string(),
+            user: UserDetail {
+                email: user.email.clone().unwrap().to_string(),
+                username: user.username.to_string(),
+                last_login: "n/a".to_string(),
+            },
+        }
+    }
 }
 
 /// Register function creates a new user with the given parameters and sends a
@@ -48,14 +80,12 @@ async fn register(
         .set_email_verification_sent(&ctx.db)
         .await?;
 
-    AuthMailer::send_welcome(&ctx, &user).await?;
-
     let jwt_secret = ctx.config.get_jwt_config()?;
 
     let token = user
         .generate_jwt(&jwt_secret.secret, &jwt_secret.expiration)
         .or_else(|_| unauthorized("unauthorized!"))?;
-    format::json(UserSession::new(&user, &token))
+    format::json(&user)
 }
 
 /// Verify register user. if the user not verified his email, he can't login to
@@ -67,11 +97,11 @@ async fn verify(
     let user = users::Model::find_by_verification_token(&ctx.db, &params.token).await?;
 
     if user.email_verified_at.is_some() {
-        tracing::info!(pid = user.pid.to_string(), "user already verified");
+        tracing::info!(username = user.username.to_string(), "user already verified");
     } else {
         let active_model = user.into_active_model();
         let user = active_model.verified(&ctx.db).await?;
-        tracing::info!(pid = user.pid.to_string(), "user verified");
+        tracing::info!(username = user.username.to_string(), "user verified");
     }
 
     format::empty_json()
@@ -95,8 +125,6 @@ async fn forgot(
         .into_active_model()
         .set_forgot_password_sent(&ctx.db)
         .await?;
-
-    AuthMailer::forgot_password(&ctx, &user).await?;
 
     format::empty_json()
 }
@@ -133,7 +161,7 @@ async fn login(State(ctx): State<AppContext>, Json(params): Json<LoginParams>) -
         .generate_jwt(&jwt_secret.secret, &jwt_secret.expiration)
         .or_else(|_| unauthorized("unauthorized!"))?;
 
-    format::json(UserSession::new(&user, &token))
+    format::json(LoginResponse::new(&user, &token))
 }
 
 pub fn routes() -> Routes {

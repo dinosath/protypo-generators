@@ -16,7 +16,6 @@ injections:
   content: "Box::new({{ file_name }}::Migration),"
 ===
 use loco_rs::schema::table_auto_tz;
-use sea_orm::{EnumIter, Iterable};
 use sea_orm_migration::{prelude::*, schema::*};
 {% if entity.enum %}
 use sea_orm_migration::sea_orm::{DbBackend, Statement};
