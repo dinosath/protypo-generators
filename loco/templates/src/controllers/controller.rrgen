@@ -21,25 +21,31 @@ injections:
 #![allow(clippy::unused_async)]
 use loco_rs::prelude::*;
 use serde::{Deserialize, Serialize};
-use axum::debug_handler;
+use axum::{debug_handler,extract::Query};
 {{ macros::seaorm_prelude_imports(entity=entity)|trim }}
-use crate::models::_entities::{{file_name | plural}}::{ActiveModel, Entity, Model};
+use crate::models::entities::{{ file_name }}::{ActiveModel, Entity, Model, Column};
+use super::utils::ListParams;
+
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Params {
-    {%- for name, property in entity.properties -%}
-        {%- if property.type -%}
+    {% for name, property in entity.properties -%}
+    {%- if property.readOnly-%}{% continue -%}{%- endif -%}
+    {%- if macros::relation_is_many_to_many(property=property)=='true' -%}
+    pub {{ name | snake_case }}:Vec<i32>,
+    {% elif property.type -%}
     pub {{ macros::get_name(name=name, property=property) | snake_case }}: {{ macros::get_type_with_option(name=name, property=property, required_fields=entity.required) }} {%- if not loop.last -%},{%- endif %}
-        {% endif -%}
-    {%- endfor -%}
+    {% endif -%}
+    {% endfor %}
 }
 
 impl Params {
     fn update(&self, item: &mut ActiveModel) {
       {% for name, property in entity.properties -%}
-      {%- if property.type  -%}
+        {%- if property.readOnly or macros::relation_is_many_to_many(property=property)=='true' -%}{% continue -%}{%- endif -%}
+        {%- if property.type  -%}
       item.{{ macros::get_name(name=name, property=property) | snake_case }} = Set(self.{{ macros::get_name(name=name, property=property) | snake_case }}.clone());
-      {% endif -%}
+        {% endif -%}
       {%- endfor -%}
     }
 }
@@ -50,8 +56,18 @@ async fn load_item(ctx: &AppContext, id: i32) -> Result<Model> {
 }
 
 #[debug_handler]
-pub async fn list(State(ctx): State<AppContext>) -> Result<Response> {
-    format::json(Entity::find().all(&ctx.db).await?)
+pub async fn list(State(ctx): State<AppContext>, Query(params): Query<ListParams>) -> Result<Response> {
+    let ids = params.ids.unwrap_or_default();
+    let offset = params.offset.unwrap_or(0);
+    let limit = params.limit.unwrap_or(10);
+
+    let mut query = Entity::find();
+    if !ids.is_empty() {
+        query = query.filter(Column::Id.is_in(ids));
+    }
+
+    let users = query.all(&ctx.db).await?;
+    format::json(users)
 }
 
 #[debug_handler]

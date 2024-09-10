@@ -1,7 +1,7 @@
 use loco_rs::{controller::bad_request, prelude::*};
 use serde::{Deserialize, Serialize};
 
-use crate::{models::{_entities::users}};
+use crate::{models::{entities::user}};
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct LoginParams {
@@ -45,7 +45,7 @@ pub struct UserDetail {
 
 impl LoginResponse {
     #[must_use]
-    pub fn new(user: &users::Model, token: &String) -> Self {
+    pub fn new(user: &user::Model, token: &String) -> Self {
         Self {
             token: token.to_string(),
             user: UserDetail {
@@ -63,7 +63,7 @@ async fn register(
     State(ctx): State<AppContext>,
     Json(params): Json<RegisterParams>,
 ) -> Result<Response> {
-    let res = users::Model::create_with_password(&ctx.db, &params).await;
+    let res = user::Model::create_with_password(&ctx.db, &params).await;
 
     let user = match res {
         Ok(user) => user,
@@ -94,7 +94,7 @@ async fn verify(
     State(ctx): State<AppContext>,
     Json(params): Json<VerifyParams>,
 ) -> Result<Response> {
-    let user = users::Model::find_by_verification_token(&ctx.db, &params.token).await?;
+    let user = user::Model::find_by_verification_token(&ctx.db, &params.token).await?;
 
     if user.email_verified_at.is_some() {
         tracing::info!(username = user.username.to_string(), "user already verified");
@@ -115,7 +115,7 @@ async fn forgot(
     State(ctx): State<AppContext>,
     Json(params): Json<ForgotParams>,
 ) -> Result<Response> {
-    let Ok(user) = users::Model::find_by_email(&ctx.db, &params.email).await else {
+    let Ok(user) = user::Model::find_by_email(&ctx.db, &params.email).await else {
         // we don't want to expose our users email. if the email is invalid we still
         // returning success to the caller
         return format::empty_json();
@@ -131,7 +131,7 @@ async fn forgot(
 
 /// reset user password by the given parameters
 async fn reset(State(ctx): State<AppContext>, Json(params): Json<ResetParams>) -> Result<Response> {
-    let Ok(user) = users::Model::find_by_reset_token(&ctx.db, &params.token).await else {
+    let Ok(user) = user::Model::find_by_reset_token(&ctx.db, &params.token).await else {
         // we don't want to expose our users email. if the email is invalid we still
         // returning success to the caller
         tracing::info!("reset token not found");
@@ -147,7 +147,7 @@ async fn reset(State(ctx): State<AppContext>, Json(params): Json<ResetParams>) -
 
 /// Creates a user login and returns a token
 async fn login(State(ctx): State<AppContext>, Json(params): Json<LoginParams>) -> Result<Response> {
-    let user = users::Model::find_by_username(&ctx.db, &params.username).await?;
+    let user = user::Model::find_by_username(&ctx.db, &params.username).await?;
 
     let valid = user.verify_password(&params.password);
 

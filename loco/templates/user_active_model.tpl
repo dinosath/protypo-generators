@@ -1,44 +1,42 @@
-{# generate models #}
-{% for entity in entities -%}
-{% if entity.properties %}
-{% set file_name = entity.title | snake_case -%}
-{% set module_name = file_name | pascal_case -%}
-to: {{ outputFolder }}/src/models/{{ file_name | plural }}.rs
-message: "Model `{{module_name}}` was created successfully."
-injections:
-- into: {{ outputFolder }}/src/models/mod.rs
-  append: true
-  content: "pub mod {{ file_name | plural }};"
-===
-use sea_orm::entity::prelude::*;
-{% if file_name=="user" %}
 use sea_orm::TransactionTrait;
 use loco_rs::{auth::jwt, hash, prelude::*};
-use serde::{Deserialize, Serialize};
 use serde_json::json;
 use uuid::Uuid;
 use chrono::{offset::Local,FixedOffset};
-pub use super::_entities::users::{self, ActiveModel, Entity, Model};
-{% else %}
-use super::_entities::{{ file_name | plural }}::ActiveModel;
-{% endif %}
 
-
+#[async_trait::async_trait]
 impl ActiveModelBehavior for ActiveModel {
-    // extend activemodel below (keep comment for generators)
+    async fn before_save<C>(self, _db: &C, insert: bool) -> Result<Self, DbErr>
+    where
+        C: ConnectionTrait,
+    {
+        {
+            if insert {
+                let mut this = self;
+                if let ActiveValue::Set(ref password) = this.password {
+                    let hashed_password = hash::hash_password(password).map_err(|e| DbErr::Custom(format!("Password hash failed: {:?}", e)))?;
+                    this.password = ActiveValue::Set(hashed_password);
+                }
+                this.pid = ActiveValue::Set(Uuid::new_v4());
+                this.api_key = ActiveValue::Set(format!("lo-{}", Uuid::new_v4()));
+                Ok(this)
+            } else {
+                Ok(self)
+            }
+        }
+    }
 }
 
 
-{% if file_name=="user" %}
-impl super::_entities::users::Model {
+impl Model {
     /// finds a user by the provided email
     ///
     /// # Errors
     ///
     /// When could not find user by the given token or DB query error
     pub async fn find_by_email(db: &DatabaseConnection, email: &str) -> ModelResult<Self> {
-        let user = users::Entity::find()
-            .filter(query::condition().eq(users::Column::Email, email).build())
+        let user = Entity::find()
+            .filter(query::condition().eq(Column::Email, email).build())
             .one(db)
             .await?;
         user.ok_or_else(|| ModelError::EntityNotFound)
@@ -50,8 +48,8 @@ impl super::_entities::users::Model {
     ///
     /// When could not find user by the given token or DB query error
     pub async fn find_by_username(db: &DatabaseConnection, username: &str) -> ModelResult<Self> {
-        let user = users::Entity::find()
-            .filter(query::condition().eq(users::Column::Username, username).build())
+        let user = Entity::find()
+            .filter(query::condition().eq(Column::Username, username).build())
             .one(db)
             .await?;
         user.ok_or_else(|| ModelError::EntityNotFound)
@@ -67,10 +65,10 @@ impl super::_entities::users::Model {
         db: &DatabaseConnection,
         token: &str,
     ) -> ModelResult<Self> {
-        let user = users::Entity::find()
+        let user = Entity::find()
             .filter(
                 query::condition()
-                    .eq(users::Column::EmailVerificationToken, token)
+                    .eq(Column::EmailVerificationToken, token)
                     .build(),
             )
             .one(db)
@@ -84,10 +82,10 @@ impl super::_entities::users::Model {
     ///
     /// When could not find user by the given token or DB query error
     pub async fn find_by_reset_token(db: &DatabaseConnection, token: &str) -> ModelResult<Self> {
-        let user = users::Entity::find()
+        let user = Entity::find()
             .filter(
                 query::condition()
-                    .eq(users::Column::ResetToken, token)
+                    .eq(Column::ResetToken, token)
                     .build(),
             )
             .one(db)
@@ -102,10 +100,10 @@ impl super::_entities::users::Model {
     /// When could not find user  or DB query error
     pub async fn find_by_pid(db: &DatabaseConnection, pid: &str) -> ModelResult<Self> {
         let parse_uuid = Uuid::parse_str(pid).map_err(|e| ModelError::Any(e.into()))?;
-        let user = users::Entity::find()
+        let user = Entity::find()
             .filter(
                 query::condition()
-                    .eq(users::Column::Pid, parse_uuid)
+                    .eq(Column::Pid, parse_uuid)
                     .build(),
             )
             .one(db)
@@ -119,10 +117,10 @@ impl super::_entities::users::Model {
     ///
     /// When could not find user by the given token or DB query error
     pub async fn find_by_api_key(db: &DatabaseConnection, api_key: &str) -> ModelResult<Self> {
-        let user = users::Entity::find()
+        let user = Entity::find()
             .filter(
                 query::condition()
-                    .eq(users::Column::ApiKey, api_key)
+                    .eq(Column::ApiKey, api_key)
                     .build(),
             )
             .one(db)
@@ -148,10 +146,10 @@ impl super::_entities::users::Model {
     ) -> ModelResult<Self> {
         let txn = db.begin().await?;
 
-        if users::Entity::find()
+        if Entity::find()
             .filter(
                 query::condition()
-                    .eq(users::Column::Email, &params.email)
+                    .eq(Column::Email, &params.email)
                     .build(),
             )
             .one(&txn)
@@ -163,7 +161,9 @@ impl super::_entities::users::Model {
 
         let password_hash =
             hash::hash_password(&params.password).map_err(|e| ModelError::Any(e.into()))?;
-        let user = users::ActiveModel {
+        let user = ActiveModel {
+            pid: ActiveValue::Set(Uuid::new_v4()),
+            api_key: ActiveValue::Set(format!("lo-{}", Uuid::new_v4())),
             email: ActiveValue::set(Some(params.email.to_string())),
             password: ActiveValue::set(password_hash),
             username: ActiveValue::set(params.name.to_string()),
@@ -191,7 +191,7 @@ impl super::_entities::users::Model {
     }
 }
 
-impl super::_entities::users::ActiveModel {
+impl ActiveModel {
     /// Validate user schema
     ///
     /// # Errors
@@ -268,8 +268,3 @@ impl super::_entities::users::ActiveModel {
         Ok(self.update(db).await?)
     }
 }
-
-{% endif %}
----
-{% endif %}
-{% endfor -%}

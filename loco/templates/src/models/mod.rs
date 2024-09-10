@@ -1,2 +1,2 @@
-pub mod _entities;
+pub mod entities;
 pub mod enums;

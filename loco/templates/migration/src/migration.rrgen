@@ -15,7 +15,7 @@ injections:
   after: "vec!\\["
   content: "Box::new({{ file_name }}::Migration),"
 ===
-use loco_rs::schema::table_auto_tz;
+use loco_rs::schema::{table_auto_tz,timestamptz,timestamptz_null};
 use sea_orm_migration::{prelude::*, schema::*};
 {% if entity.enum %}
 use sea_orm_migration::sea_orm::{DbBackend, Statement};
@@ -35,17 +35,16 @@ impl MigrationTrait for Migration {
                 .if_not_exists()
                     .col(pk_auto({{ enum_name }}::Id))                    
                     {% for name, property in entity.properties -%}
-                    .col({{macros::get_migration_type(name=name,property=property)}}(
-                    {{ enum_name }}::{{ name | pascal_case }}
-                    {% if property.enum %}
+                    .col({{macros::get_migration_type(name=name,property=property,required=entity.required)}}({{ enum_name }}::{{ name | pascal_case }}
+                    {%- if property.enum -%}
                     ,Alias::new("{{ name | snake_case }}"),{{ name | pascal_case }}::iter()
-                    {% endif %}
+                    {%- endif -%}
                     ))
-                    {% endfor %}
+                    {% endfor -%}
                     .to_owned(),
             )
             .await
-{% elif entity.enum %}
+{% elif entity.enum -%}
         let db = manager.get_connection();
 
         match db.get_database_backend() {

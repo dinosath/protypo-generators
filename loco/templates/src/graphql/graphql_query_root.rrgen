@@ -1,3 +1,5 @@
+{% import "macros.tpl" as macros -%}
+
 {%- if features and 'graphql' in features  -%}
 {% set file_name = outputFolder ~ "/src/graphql/query_root.rs" %}
 to: {{file_name}}
@@ -11,7 +13,7 @@ use async_graphql::dynamic::*;
 use sea_orm::DatabaseConnection;
 use seaography::{Builder, BuilderContext};
 
-use crate::models::_entities::*;
+use crate::models::entities::*;
 
 lazy_static::lazy_static! { static ref CONTEXT: BuilderContext = BuilderContext::default(); }
 
@@ -28,7 +30,12 @@ pub fn schema(
         [
             {% for entity in entities -%}
                 {% if not entity.properties %}{% continue %}{% endif %}
-                {{ entity.title | plural | snake_case }}{%- if not loop.last -%},{% endif -%}
+                {{ entity.title | snake_case }}{%- if not loop.last -%},{% endif -%}
+            {% endfor %}
+            {% set relations = macros::get_m2m_relations(entities=entities) | split(pat=",") -%}
+            {%- if relations and relations | length > 0 -%},{% endif %}
+            {% for relation in relations -%}
+                {{ relation | snake_case }}{%- if not loop.last -%},{% endif -%}
             {% endfor %}
         ]
         

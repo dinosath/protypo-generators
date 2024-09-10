@@ -1,63 +1,66 @@
-{%- macro get_migration_type(name, property) -%}
-{% filter trim %}
+{%- macro get_migration_type(name, property, required) -%}
+{% filter trim -%}
     {% if property.type and property.type == "string" -%}
-        {% if property.format and property.format == "uuid" -%}
+        {%- if property.format and property.format == "uuid" -%}
             uuid
-        {% elif property.format and property.format == "date-time" -%}
+        {%- elif property.format and property.format == "date-time" -%}
+            timestamptz
+        {%- elif property.format and property.format == "date" -%}
             date_time
-        {% elif property.format and property.format == "date" -%}
-            date_time
-        {% elif property.format and property.format == "time" -%}
+        {%- elif property.format and property.format == "time" -%}
             time
-        {% else -%}
+        {%- else -%}
             string
-        {% endif -%}    
-    {% elif property.type and property.type == "boolean" -%}
+        {%- endif -%}    
+    {%- elif property.type and property.type == "boolean" -%}
         boolean
-    {% elif property.type and property.type == "integer" -%}
-        {% set min = property.minimum or property.exclusiveMinimum -%}
-        {% set max = property.maximum or property.exclusiveMaximum -%}
-        {% if min and min >= 0 -%}
-            {% if max and max <= 255 -%}
+    {%- elif property.type and property.type == "integer" -%}
+        {%- set min = property.minimum or property.exclusiveMinimum -%}
+        {%- set max = property.maximum or property.exclusiveMaximum -%}
+        {%- if min and min >= 0 -%}
+            {%- if max and max <= 255 -%}
                 tiny_unsigned
-            {% elif max and max <= 65535 -%}
+            {%- elif max and max <= 65535 -%}
                 small_unsigned
-            {% elif max and max <= 4294967295 -%}
+            {%- elif max and max <= 4294967295 -%}
                 unsigned
-            {% else -%}
+            {%- else -%}
                 big_unsigned
-            {% endif -%}
-        {% else -%}
-            {% if max and max <= 127 -%}
+            {%- endif -%}
+        {%- else -%}
+            {%-if max and max <= 127 -%}
                 tiny_integer
-            {% elif max and max <= 32767 -%}
+            {%-elif max and max <= 32767 -%}
                 small_integer
-            {% elif max and max <= 2147483647 -%}
+            {%-elif max and max <= 2147483647 -%}
                 integer
-            {% else -%}
+            {%-else -%}
                 big_integer
-            {% endif -%}
-        {% endif -%}
-    {% elif property.type and property.type == "number" -%}
-        {% set min = property.minimum or property.exclusiveMinimum -%}
-        {% set max = property.maximum or property.exclusiveMaximum -%}
-        {% if min or max -%}
-            {% if min and min >= -3.40282347 and max and max <= 3.40282347 -%}
+            {%- endif -%}
+        {%- endif -%}
+    {%-elif property.type and property.type == "number" -%}
+        {%-set min = property.minimum or property.exclusiveMinimum -%}
+        {%-set max = property.maximum or property.exclusiveMaximum -%}
+        {%-if min or max -%}
+            {%-if min and min >= -3.40282347 and max and max <= 3.40282347 -%}
                 float
-            {% else -%}
+            {%-else -%}
                 double
-            {% endif -%}
-        {% else -%}
+            {%-endif -%}
+        {%-else -%}
             double
-        {% endif -%}
-    {% elif property.enum %}
+        {%-endif -%}
+    {%-elif property.enum %}
         enumeration
-    {% elif property['x-relationship'] and property['$ref'] %}
+    {%-elif property['x-relationship'] and property['$ref'] -%}
         unsigned
-    {% else -%}
+    {%-else -%}
         string
-    {% endif -%}
-{% endfilter %}
+    {%- endif -%}
+    {%- if name not in required -%}
+    _null
+    {%-endif -%}
+{%-endfilter %}
 {%- endmacro -%}
 
 {%- macro get_type(name, property) -%}
@@ -126,6 +129,12 @@
 {%- endmacro -%}
 
 
+{% macro validations(name, property) -%}
+    {% if property and property['x-unique'] %}
+    #[sea_orm(unique)]
+    {%- endif -%}
+{% endmacro -%}
+
 {%- macro get_type_with_option(name, property, required_fields) -%}
 {% set required = required_fields and name and name in required_fields -%}
 {% if not required -%}Option<{% endif -%}
@@ -146,6 +155,8 @@
 {%- macro get_relation(property) -%}
     {% if property['$ref'] -%}
     {{ property['$ref'] | split(pat=".")|first }}
+    {% elif self::relation_is_many_to_many(property=property)=='true' -%}
+    {{ property['items']['$ref'] | split(pat=".")|first }}
     {%- endif -%}
 {%- endmacro -%}
 
@@ -162,6 +173,41 @@
 {{ property['x-relationship'] and property['x-relationship']=="one-to-many"}}
 {%- endmacro -%}
 
+{%- macro relation_is_many_to_many(property) -%}
+{{ property.type and property.type=="array" and property.items and property['items']['x-relationship'] and property['items']['x-relationship']=="many-to-many"}}
+{%- endmacro -%}
+
+{%- macro is_relation(property) -%}
+{{ self::relation_is_many_to_one(property=property)=='true' or self::relation_is_one_to_many(property=property)=='true' or self::relation_is_many_to_many(property=property)=='true'  }}
+{%- endmacro -%}
+
+{%- macro get_m2m_relation(left,property) -%}
+{%- filter trim -%}
+{% if self::relation_is_many_to_many(property=property) %}
+{% set right = self::get_relation(property=property) %}
+{% set_global relation_array = [] %}
+{% set_global relation_array = relation_array | concat(with=left) %}
+{% set_global relation_array = relation_array | concat(with=right) %}
+{{relation_array | sort | join(sep="_")}}
+{% endif%}
+{%- endfilter -%}
+{%- endmacro -%}
+
+{%- macro get_m2m_relations(entities) -%}
+{% set_global created_relations = [] %}
+{% for entity in entities -%}
+    {% if entity.properties %}
+        {% for name,property in entity.properties -%}
+            {% if self::relation_is_many_to_many(property=property)=='true' -%}
+                {% set relation = self::get_m2m_relation(left=entity.title, property=property) %}
+                {% set_global created_relations = created_relations | concat(with=relation) %}
+            {% endif %}
+        {% endfor %}
+    {% endif %}
+{% endfor -%}
+{{created_relations | unique | sort | join(sep=",")}}
+{%- endmacro -%}
+
 {%- macro has_many_to_one_relation(entity) -%}
 {%- set_global has_many_to_one_relation = false -%}
 {% for name,property in entity.properties -%}
@@ -174,26 +220,26 @@
 {%- endmacro -%}
 
 {%- macro enum_imports(entity) -%}
-{% for name,property in entity.properties -%}
-    {% if property['$ref'] and not property['x-relationship'] -%}
+{%- for name,property in entity.properties -%}
+    {%- if property['$ref'] and not property['x-relationship'] -%}
         {%- set type = self::get_type(name=name,property=property) | snake_case-%}
         {%- set type_pascal = type | pascal_case -%}
         {{ "use crate::models::enums::" ~ type ~ "::{" ~ type_pascal ~ "};" }}
-    {% endif -%}
-{% endfor -%}
+    {%- endif -%}
+{%- endfor -%}
 {%- endmacro -%}
 
 {%- macro seaorm_prelude_imports(entity) -%}
 {%- set possible_imports = ['DateTimeWithTimeZone','TimeDate','TimeTime'] -%}
 {%- set_global use_imports = [] -%}
-{% for name,property in entity.properties -%}
+{%- for name,property in entity.properties -%}
     {%- set type = self::get_type(name=name, property=property) -%}
     {% if type in possible_imports and type not in use_imports -%}
         {%- set_global use_imports = use_imports | concat(with=type) -%}
     {% endif -%}
 {% endfor -%}
-{% if use_imports | length > 0 -%}
+{%- if use_imports | length > 0 -%}
 {%- set use_imports_str = use_imports | join(sep=",") -%}
 {{ "use sea_orm::prelude::{" ~ use_imports_str ~ "};"}}
-{% endif -%}
+{%- endif -%}
 {%- endmacro -%}
