@@ -14,7 +14,7 @@ injections:
   after: "pub struct Migrator;"
   content: "mod {{ file_name }};"
 - into: {{ outputFolder }}/migration/src/lib.rs
-  after: "vec!\\["
+  after: "//migrations_end"
   content: "Box::new({{ file_name }}::Migration),"
 ===
 use loco_rs::schema::{table_auto_tz,timestamptz,timestamptz_null};

@@ -32,7 +32,7 @@ enum {{ name | pascal_case }}{
 {% endfor -%}
 
 #[derive(Clone, Debug, PartialEq, DeriveEntityModel, Serialize, Deserialize)]
-#[sea_orm(schema_name="public", table_name = "{{ entity.title | plural | snake_case }}")]
+#[sea_orm(schema_name="public", table_name = "{{ entity.title | snake_case }}")]
 pub struct Model {
     #[sea_orm(primary_key)]
     #[serde(skip_deserializing)]
@@ -42,7 +42,7 @@ pub struct Model {
     {%- for name, property in entity.properties -%}
     {% if macros::relation_is_many_to_many(property=property)=='false' -%}
     {{self::validations(name=name,property=property)}}
-    pub {{ self::get_name(name=name, property=property) | snake_case }}: {{ self::get_type_with_option(name=name, property=property, required_fields=entity.required) }}{%- if not loop.last -%},{% endif -%}
+    pub {{ name | snake_case }}: {{ macros::get_type_with_option(name=name, property=property, required_fields=entity.required) }}{%- if not loop.last -%},{% endif -%}
     {% endif -%}
     {% endfor %}
 }
@@ -58,12 +58,12 @@ pub enum Relation {
     {%- elif self::relation_is_many_to_one(property=property)=='true' -%}
         {% set relation = self::get_relation(property=property) | snake_case -%}
     #[sea_orm(belongs_to = "crate::models::entities::{{ relation }}::Entity",
-    from = "Column::{{ self::get_name(name=name, property=property) | pascal_case }}",
+    from = "Column::{{ name | pascal_case }}",
     to = "crate::models::entities::{{ relation }}::Column::Id")]
     {{ name | title }},
 
-    {% endif -%}
-    {% if self::relation_is_many_to_many(property=property)=='true'-%}
+    
+    {% elif self::relation_is_many_to_many(property=property)=='true'-%}
     {% set relation = macros::get_m2m_relation(left=entity.title, property=property) | snake_case-%} 
     #[sea_orm(has_many = "crate::models::entities::{{ relation }}::Entity")]
     {{ relation | pascal_case }},

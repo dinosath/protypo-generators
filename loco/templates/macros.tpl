@@ -142,16 +142,6 @@
 {%- if not required -%}>{% endif -%}
 {%- endmacro -%}
 
-{%- macro get_name(name, property) -%}
-{% filter trim %}
-{% if property['x-relationship'] and property['$ref'] %}
-    {% set name = name~"Id" -%}
-{% endif -%}
-{{ name }}
-{% endfilter %}
-{%- endmacro -%}
-
-
 {%- macro get_relation(property) -%}
     {% if property['$ref'] -%}
     {{ property['$ref'] | split(pat=".")|first }}
@@ -208,6 +198,20 @@
 {{created_relations | unique | sort | join(sep=",")}}
 {%- endmacro -%}
 
+{%- macro get_m21_relations(entity) -%}
+{% set_global created_relations = [] -%}
+{% if entity.properties -%}
+    {% for name,property in entity.properties -%}
+        {% if self::relation_is_many_to_one(property=property)=='true' -%}
+            {% set relation = self::get_relation(left=entity.title, property=property) | trim -%}
+            {% set_global created_relations = created_relations | concat(with=relation) -%}
+        {% endif -%}
+    {% endfor -%}
+{% endif -%}
+{{created_relations | unique | sort | join(sep=",")}}
+{%- endmacro -%}
+
+
 {%- macro has_many_to_one_relation(entity) -%}
 {%- set_global has_many_to_one_relation = false -%}
 {% for name,property in entity.properties -%}
@@ -243,3 +247,16 @@
 {{ "use sea_orm::prelude::{" ~ use_imports_str ~ "};"}}
 {%- endif -%}
 {%- endmacro -%}
+
+{% macro get_m21_relations_type(entity) -%}
+{% set_global relations = [] -%}
+{% if entity.properties -%}
+{% for name, property in entity.properties -%}
+{% if self::relation_is_many_to_one(property=property)=='true' -%}
+{% set relation = self::get_relation(property=property) -%}
+{% set_global relations = relations | concat(with=relation) -%}
+{% endif -%}
+{% endfor -%}
+{% endif -%}
+{{ relations | join(sep=",")}}
+{% endmacro -%}
