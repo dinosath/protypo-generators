@@ -40,10 +40,9 @@ pub struct Model {
     pub created_at: DateTimeWithTimeZone,
     pub updated_at: DateTimeWithTimeZone,
     {%- for name, property in entity.properties -%}
-    {% if macros::relation_is_many_to_many(property=property)=='false' -%}
-    {{self::validations(name=name,property=property)}}
-    pub {{ name | snake_case }}: {{ macros::get_type_with_option(name=name, property=property, required_fields=entity.required) }}{%- if not loop.last -%},{% endif -%}
-    {% endif -%}
+    {% if macros::relation_is_many_to_many(property=property)=='true' or macros::relation_is_one_to_many(property=property)=='true' -%}{% continue -%}{% endif -%}
+    {{ self::validations(name=name,property=property) }}
+    pub {{ name | snake_case }}{% if self::relation_is_many_to_one(property=property)=='true' and self::get_relation(property=property) | snake_case == name | snake_case -%}_id{% endif -%}: {{ macros::get_type_with_option(name=name, property=property, required_fields=entity.required) }}{%- if not loop.last -%},{% endif -%}
     {% endfor %}
 }
 
@@ -53,14 +52,14 @@ pub enum Relation {
     {% if self::relation_is_one_to_many(property=property)=='true' -%}
         {% set relation = self::get_relation(property=property) | snake_case -%}
     #[sea_orm(has_many = "crate::models::entities::{{ relation }}::Entity")]
-    {{ name | title }},
+    {{ name | pascal_case }},
 
     {%- elif self::relation_is_many_to_one(property=property)=='true' -%}
         {% set relation = self::get_relation(property=property) | snake_case -%}
     #[sea_orm(belongs_to = "crate::models::entities::{{ relation }}::Entity",
-    from = "Column::{{ name | pascal_case }}",
+    from = "Column::{{ name | pascal_case }}{% if relation==name | snake_case -%}Id{% endif -%}",
     to = "crate::models::entities::{{ relation }}::Column::Id")]
-    {{ name | title }},
+    {{ name | pascal_case }},
 
     
     {% elif self::relation_is_many_to_many(property=property)=='true'-%}
@@ -98,7 +97,7 @@ impl Related<super::{{ relation | snake_case }}::Entity> for Entity {
 
 impl Related<crate::models::entities::{{ relation }}::Entity> for Entity {
     fn to() -> RelationDef {
-        Relation::{{ name | title }}.def()
+        Relation::{{ name | pascal_case }}.def()
     }
 }
         {%- endif -%}

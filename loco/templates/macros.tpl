@@ -260,3 +260,9 @@
 {% endif -%}
 {{ relations | join(sep=",")}}
 {% endmacro -%}
+
+{% macro m21_relation_equal_name(name,property) -%}
+{% filter trim -%}
+{{ self::relation_is_many_to_one(property=property)=='true' and  self::get_relation(property=property)|snake_case==name|snake_case }}
+{% endfilter -%}
+{% endmacro -%}
