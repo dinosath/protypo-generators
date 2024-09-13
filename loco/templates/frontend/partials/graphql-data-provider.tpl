@@ -1,3 +1,4 @@
+{% import "macros_front.tpl" as macros -%}
 import { ApolloClient, InMemoryCache, gql } from "@apollo/client";
 import { omit } from "lodash";
 
@@ -20,8 +21,10 @@ const client = new ApolloClient({
 });
 
 const fields = {
-    posts: "id title body author_id created_at",
-    authors: "id name"
+    {% for entity in entities -%}
+    {%- if not entity.properties -%}{%- continue -%}{%- endif -%}
+    {{ entity.title | snake_case }}: "{{macros::get_all_properties_by_name(entity=entity)}}"{%- if not loop.last -%},{% endif %}
+    {% endfor %}
 };
 
 export const dataProvider = {

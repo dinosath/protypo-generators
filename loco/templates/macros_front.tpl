@@ -121,3 +121,12 @@
     {% endif -%}
 {% endfilter %}
 {%- endmacro -%}
+
+
+{%- macro get_all_properties_by_name(entity) -%}
+{%- set_global properties = [] -%}
+{% for name,property in entity.properties -%}
+    {%- set_global properties = properties | concat(with=name) -%}
+{% endfor -%}
+{{ properties | join(sep=" ") }}
+{%- endmacro -%}
