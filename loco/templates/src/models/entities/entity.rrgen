@@ -104,23 +104,17 @@ impl Related<crate::models::entities::{{ relation }}::Entity> for Entity {
     {%- endif -%}
 {%- endfor -%}
 
-{% if features and 'graphql' in features  %}
+
+{% if features and 'graphql' in features -%}
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelatedEntity)]
 pub enum RelatedEntity {
-    {% for name,property in entity.properties -%}
-    {%- set relation = self::get_relation(property=property) | snake_case -%}
-    {%- if self::is_relation(property=property)=='true' -%}
-    #[sea_orm(entity = "crate::models::entities::{{ relation }}::Entity")]
-    {{ name | pascal_case }}
-    {%- if self::relation_is_many_to_many(property=property)=='true'-%}
-    {% set relation = macros::get_m2m_relation(left=entity.title, property=property) -%} 
-    ,
+    {% set relations = macros::get_all_relations(entity=entity) | trim -%}
+    {% if relations !="" -%}
+    {% for relation in relations|split(pat=",") -%}    
     #[sea_orm(entity = "crate::models::entities::{{ relation | snake_case }}::Entity")]
-    {{ relation | pascal_case }}
+    {{ relation | pascal_case }}{%- if not loop.last -%},{% endif -%}
+    {% endfor -%}
     {% endif -%}
-    {%- if not loop.last -%},{% endif -%}
-    {% endif -%}
-{% endfor %}
 }
 {% endif -%}
 

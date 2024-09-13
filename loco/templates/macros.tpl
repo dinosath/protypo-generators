@@ -183,6 +183,22 @@
 {%- endfilter -%}
 {%- endmacro -%}
 
+{%- macro get_all_relations(entity) -%}
+{% set_global created_relations = [] -%}
+{% if entity.properties -%}
+    {% for name,property in entity.properties -%}
+        {% if self::relation_is_many_to_many(property=property)=='true' -%}
+            {% set relation = self::get_m2m_relation(left=entity.title, property=property) | trim -%}
+            {% set_global created_relations = created_relations | concat(with=relation) -%}
+        {% elif self::is_relation(property=property)=='true' -%}
+            {% set relation = self::get_relation(property=property) | trim -%}
+            {% set_global created_relations = created_relations | concat(with=relation) -%}
+        {% endif -%}
+    {% endfor -%}
+{% endif -%}
+{{created_relations | unique | sort | join(sep=",")}}
+{%- endmacro -%}
+
 {%- macro get_m2m_relations(entities) -%}
 {% set_global created_relations = [] %}
 {% for entity in entities -%}
