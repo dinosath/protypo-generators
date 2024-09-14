@@ -17,15 +17,24 @@ const client = new ApolloClient({
             fetchPolicy: 'no-cache',
             errorPolicy: 'all',
         },
-    }
+    } 
 });
 
+//todo add nodes and ids in relationships
 const fields = {
     {% for entity in entities -%}
     {%- if not entity.properties -%}{%- continue -%}{%- endif -%}
     {{ entity.title | snake_case }}: "{{macros::get_all_properties_by_name(entity=entity)}}"{%- if not loop.last -%},{% endif %}
     {% endfor %}
 };
+
+const pascal = {
+    {% for entity in entities -%}
+    {%- if not entity.properties -%}{%- continue -%}{%- endif -%}
+    {{ entity.title | snake_case }}: "{{ entity.title | pascal_case }}"{%- if not loop.last -%},{% endif %}
+    {% endfor %}
+};
+
 
 export const dataProvider = {
     getList: (resource,{ sort, pagination, filter, signal }, options) => {
@@ -36,20 +45,23 @@ export const dataProvider = {
         return client
             .query({
                 query: gql`
-            query ($limit: Int, $offset: Int, $order_by: [${resource}_order_by!], $where: ${resource}_bool_exp) {
-                ${resource}(limit: $limit, offset: $offset, order_by: $order_by, where: $where) {
-                    ${fields[resource]}
-                }
-                ${resource}_aggregate(where: $where) {
-                    aggregate {
-                        count
+            query ($limit: Int!, $offset: Int!, $orderBy: ${pascal[resource]}OrderInput) {
+                ${resource}(pagination: { page: { limit: $limit, page: $offset } }, orderBy:$orderBy) {
+                    nodes{
+                        ${fields[resource]}
+                    }
+                    paginationInfo {
+                      pages current offset total __typename
+                    }
+                    pageInfo {
+                      hasPreviousPage hasNextPage startCursor endCursor __typename
                     }
                 }
             }`,
                 variables: {
                     limit: perPage,
                     offset: (page - 1) * perPage,
-                    order_by: { [field]: order.toLowerCase() },
+                    orderBy: { "id": "ASC" },
                     where: Object.keys(filter).reduce(
                         (prev, key) => ({
                             ...prev,
@@ -65,8 +77,8 @@ export const dataProvider = {
                 },
             })
             .then((result) => ({
-                data: result.data[resource],
-                total: result.data[`${resource}_aggregate`].aggregate.count,
+                data: result.data[resource].nodes,
+                total: result.data[resource].paginationInfo.total,
             }));
     },
     getOne: (resource, params) => {

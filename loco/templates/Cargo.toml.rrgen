@@ -42,7 +42,7 @@ fluent-templates = { version = "0.8.0", features = ["tera"] }
 unic-langid = "0.9.4"
 
 {% if features and 'graphql' in features  %}
-seaography = { version = "1.0.0-rc.4", features = ["with-decimal", "with-chrono"] }
+seaography = { version = "1.0.0-rc.4", features = ["with-decimal", "with-chrono","with-uuid","with-bigdecimal","with-json","with-postgres-array","with-time"] }
 async-graphql = { version = "7.0", features = ["decimal", "chrono", "dataloader", "dynamic-schema"] }
 async-graphql-axum = { version = "7.0" }
 lazy_static = { version = "1.4" }
