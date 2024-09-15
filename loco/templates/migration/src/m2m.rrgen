@@ -43,7 +43,7 @@ impl MigrationTrait for Migration {
                         ForeignKey::create()
                             .name("fk-{{ file_name | snake_case }}-{{ left | snake_case }}_id")
                             .from({{ file_name | pascal_case }}::Table, {{ file_name | pascal_case }}::{{ left | pascal_case }}Id)
-                            .to({{ left | plural | pascal_case }}::Table, {{ left | plural | pascal_case }}::Id)
+                            .to({{ left | pascal_case }}::Table, {{ left | pascal_case }}::Id)
                             .on_delete(ForeignKeyAction::Cascade)
                             .on_update(ForeignKeyAction::Cascade),
                     )
@@ -51,7 +51,7 @@ impl MigrationTrait for Migration {
                         ForeignKey::create()
                             .name("fk-{{ file_name | snake_case }}-{{ right | snake_case }}_id")
                             .from({{ file_name | pascal_case }}::Table, {{ file_name | pascal_case }}::{{ right | pascal_case }}Id)
-                            .to({{ right | plural | pascal_case }}::Table, {{ right | plural | pascal_case }}::Id)
+                            .to({{ right | pascal_case }}::Table, {{ right | pascal_case }}::Id)
                             .on_delete(ForeignKeyAction::Cascade)
                             .on_update(ForeignKeyAction::Cascade),
                     )
@@ -77,13 +77,13 @@ enum {{ file_name | pascal_case }} {
 }
 
 #[derive(DeriveIden)]
-enum {{ left | plural | pascal_case }} {
+enum {{ left | pascal_case }} {
     Table,
     Id
 }
 
 #[derive(DeriveIden)]
-enum {{ right | plural | pascal_case }} {
+enum {{ right | pascal_case }} {
     Table,
     Id
 }

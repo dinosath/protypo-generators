@@ -38,7 +38,6 @@ pub struct LoginResponse {
 }
 #[derive(Debug, Deserialize, Serialize)]
 pub struct UserDetail {
-    pub email: String,
     pub username: String,
     pub last_login: String,
 }
@@ -49,7 +48,6 @@ impl LoginResponse {
         Self {
             token: token.to_string(),
             user: UserDetail {
-                email: user.email.clone().unwrap().to_string(),
                 username: user.username.to_string(),
                 last_login: "n/a".to_string(),
             },
