@@ -24,7 +24,7 @@ const client = new ApolloClient({
 const fields = {
     {% for entity in entities -%}
     {%- if not entity.properties -%}{%- continue -%}{%- endif -%}
-    {{ entity.title | snake_case }}: "{{macros::get_all_properties_by_name(entity=entity)}}"{%- if not loop.last -%},{% endif %}
+    {{ entity.title | snake_case }}: "id createdAt updatedAt {{macros::get_all_properties_by_name(entity=entity)}}"{%- if not loop.last -%},{% endif %}
     {% endfor %}
 };
 
@@ -92,7 +92,7 @@ export const dataProvider = {
             .query({
                 query: gql`
             query ($id: Int!) {
-                ${resource}_by_pk(id: $id) {
+                ${resource}(id: $id) {
                     ${fields[resource]}
                 }
             }`,
@@ -105,7 +105,7 @@ export const dataProvider = {
                     },
                 },
             })
-            .then((result) => ({ data: result.data[`${resource}_by_pk`] }));
+            .then((result) => ({ data: result.data[`${resource}`] }));
     },
     getMany: (resource, params) => {
         return client
