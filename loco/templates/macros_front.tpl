@@ -1,3 +1,6 @@
+{% import "macros.tpl" as macros -%}
+
+
 {%- macro get_field(property) -%}
 {% filter trim %}
     {% if property.type and property.type == "string" -%}
@@ -126,6 +129,13 @@
 {%- macro get_all_properties_by_name(entity) -%}
 {%- set_global properties = [] -%}
 {% for name,property in entity.properties -%}
+    {% if macros::relation_is_one_to_many(property=property)=='true' or macros::relation_is_many_to_many(property=property)=='true'  -%}
+    {% continue -%}
+    {% endif -%}
+    {% if macros::relation_is_many_to_one(property=property)=='true'  -%}
+    {% set relation = macros::get_relation(property=property) | camel_case | trim -%}
+    {% set name = relation ~ " { id }" -%}
+    {% endif -%}
     {%- set_global properties = properties | concat(with=name) -%}
 {% endfor -%}
 {{ properties | join(sep=" ") }}

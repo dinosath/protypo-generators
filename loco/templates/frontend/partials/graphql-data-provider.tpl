@@ -35,6 +35,12 @@ const pascal = {
     {% endfor %}
 };
 
+const camel = {
+    {% for entity in entities -%}
+    {%- if not entity.properties -%}{%- continue -%}{%- endif -%}
+    {{ entity.title | snake_case }}: "{{ entity.title | camel_case }}"{%- if not loop.last -%},{% endif %}
+    {% endfor %}
+};
 
 export const dataProvider = {
     getList: (resource,{ sort, pagination, filter, signal }, options) => {
@@ -46,7 +52,7 @@ export const dataProvider = {
             .query({
                 query: gql`
             query ($limit: Int!, $offset: Int!, $orderBy: ${pascal[resource]}OrderInput) {
-                ${resource}(pagination: { page: { limit: $limit, page: $offset } }, orderBy:$orderBy) {
+                ${camel[resource]}(pagination: { page: { limit: $limit, page: $offset } }, orderBy:$orderBy) {
                     nodes{
                         ${fields[resource]}
                     }
@@ -77,8 +83,8 @@ export const dataProvider = {
                 },
             })
             .then((result) => ({
-                data: result.data[resource].nodes,
-                total: result.data[resource].paginationInfo.total,
+                data: result.data[camel[resource]].nodes,
+                total: result.data[camel[resource]].paginationInfo.total,
             }));
     },
     getOne: (resource, params) => {
