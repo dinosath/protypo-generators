@@ -1,8 +1,0 @@
-to: {{ outputFolder }}/frontend/src/dataProvider.ts
-message: "File for ui `package.json` was created successfully."
-===
-{% if features and 'graphql' in features -%}
-{% include "frontend/partials/graphql-data-provider.tpl" -%}
-{% else -%}
-{% include "frontend/partials/rest-data-provider.tpl" -%}
-{% endif -%}

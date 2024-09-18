@@ -26,6 +26,21 @@ use axum::{debug_handler,extract::Query};
 use crate::models::entities::{{ file_name }}::{ActiveModel, Entity, Model, Column};
 use super::utils::ListParams;
 
+{{ this | json_encode()}}
+
+{% if macros::has_one_to_many_relation(entity=entity)=='true' or macros::has_many_to_many_relation(entity=entity)=='true' -%}
+#[derive(Clone, Debug, Serialize, Deserialize)]
+pub struct ResponseModel {
+    {% for name, property in entity.properties -%}
+    {%- if property.writeOnly -%}{% continue -%}{%- endif -%}
+    {%- if macros::relation_is_many_to_many(property=property)=='true' -%}
+    pub {{ name | snake_case }}:Vec<i32>,
+    {% elif property.type -%}
+    pub {{ name | snake_case }}: {{ macros::get_type_with_option(name=name, property=property, required_fields=entity.required) }} {%- if not loop.last -%},{%- endif %}
+    {% endif -%}
+    {% endfor %}
+}
+{% endif -%}
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Params {
@@ -65,6 +80,20 @@ pub async fn list(State(ctx): State<AppContext>, Query(params): Query<ListParams
     if !ids.is_empty() {
         query = query.filter(Column::Id.is_in(ids));
     }
+
+    let mut users_with_roles = Entity::find()
+        .find_with_related(role_user::Entity)
+        .all(&ctx.db)
+        .await?;
+
+
+    let users:Vec<&mut Model> = users_with_roles.iter_mut()
+        .map(|(user, roles)| {
+            user.roles = roles.iter().map(|x| x.role_id).collect();
+            user
+        })
+        .collect();
+
 
     let users = query.all(&ctx.db).await?;
     format::json(users)

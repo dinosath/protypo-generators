@@ -1,4 +1,4 @@
-to: {{ outputFolder }}/frontend/package.json
+to: {{ outputFolder }}/package.json
 message: "File for ui `package.json` was created successfully."
 ===
 {
