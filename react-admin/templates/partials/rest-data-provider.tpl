@@ -11,8 +11,16 @@ const fetchJson = (url, options = {}) => {
        };
        return fetchUtils.fetchJson(url, options);
     };
-const apiUrl = 'http://localhost:5150/api';
+const apiUrl = 'http://localhost:8080/api';
 const httpClient = fetchUtils.fetchJson;
+
+const resource_url = {
+    {% for entity in entities -%}
+    {%- if not entity.properties -%}{%- continue -%}{%- endif -%}
+    {{ entity.title | plural | snake_case }}: "{{ entity.title | plural | kebab_case }}"{%- if not loop.last -%},{% endif %}
+    {% endfor %}
+};
+
 
 export const dataProvider: DataProvider = {
     getList: async (resource, params) => {
@@ -23,7 +31,7 @@ export const dataProvider: DataProvider = {
             range: JSON.stringify([(page - 1) * perPage, page * perPage - 1]),
             filter: JSON.stringify(params.filter),
         };
-        const url = `${apiUrl}/${resource}?${stringify(query)}`;
+        const url = `${apiUrl}/${resource_url[resource]}?${stringify(query)}`;
 
         const { json, headers } = await httpClient(url, { signal: params.signal });
         const contentRange = headers.get('content-range');

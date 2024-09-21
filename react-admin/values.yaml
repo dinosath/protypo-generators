@@ -5,6 +5,8 @@ applicationType: monolith
 authenticationType: jwt
 cacheProvider: "redis"
 clientFramework: "svelte"
+dataProviderUrl: "http://localhost:8080"
+authProviderUrl: "http://localhost:8080"
 clientPackageManager: "npm"
 clientTheme: "none"
 clientThemeVariant: ""
