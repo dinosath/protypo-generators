@@ -146,7 +146,7 @@
     {% if property['$ref'] -%}
     {{ property['$ref'] | split(pat=".")|first }}
     {% elif self::relation_is_many_to_many(property=property)=='true' -%}
-    {{ property['items']['$ref'] | split(pat=".")|first }}
+    {{ property['items']['$ref'] | split(pat=".") | first }}
     {%- endif -%}
 {%- endmacro -%}
 

@@ -16,7 +16,7 @@
             TextField
         {% endif -%}    
     {% elif property.type and property.type == "boolean" -%}
-        TextField
+        BooleanField
     {% elif property.type and property.type == "integer" -%}
         {% set min = property.minimum or property.exclusiveMinimum -%}
         {% set max = property.maximum or property.exclusiveMaximum -%}
@@ -60,7 +60,7 @@
         TextField
     {% elif macros::relation_is_many_to_one(property=property)=='true' -%}
         {% set relation = macros::get_relation(property=property) -%}
-        ReferenceField reference="{{ relation | plural | kebab_case }}" label="{{ relation | pascal_case }}"
+        ReferenceField reference="{{ relation | kebab_case | plural }}" label="{{ relation | pascal_case }}"
     {% else -%}
         TextField
     {% endif -%}
@@ -88,7 +88,7 @@ readOnly
             TextInput
         {% endif -%}    
     {% elif property.type and property.type == "boolean" -%}
-        TextInput
+        BooleanInput
     {% elif property.type and property.type == "integer" -%}
         {% set min = property.minimum or property.exclusiveMinimum -%}
         {% set max = property.maximum or property.exclusiveMaximum -%}
