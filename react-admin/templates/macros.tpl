@@ -304,3 +304,9 @@
 {{ self::relation_is_many_to_one(property=property)=='true' and  self::get_relation(property=property)|snake_case==name|snake_case }}
 {% endfilter -%}
 {% endmacro -%}
+
+{% macro is_enum(property) -%}
+{% if property.enum and property.enum|length > 0 -%}
+true
+{% endif -%}
+{% endmacro -%}

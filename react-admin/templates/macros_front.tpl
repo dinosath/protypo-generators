@@ -57,7 +57,10 @@
         TextField
     {% elif macros::relation_is_one_to_many(property=property)=='true' or macros::relation_is_many_to_many(property=property)=='true'  -%}
         {% set relation = macros::get_relation(property=property) | plural | snake_case -%}
-        ReferenceArrayInput reference="{{ relation }}"
+        TextField
+    {% elif macros::relation_is_many_to_one(property=property)=='true' -%}
+        {% set relation = macros::get_relation(property=property) -%}
+        ReferenceField reference="{{ relation | plural | kebab_case }}" label="{{ relation | pascal_case }}"
     {% else -%}
         TextField
     {% endif -%}
@@ -123,7 +126,11 @@ readOnly
             TextInput
         {% endif -%}
     {% elif property.enum %}
-        TextInput
+        SelectField choices={[
+            {%- for enum in property.enum -%}
+               { name: '{{ enum }}' }{%- if not loop.last -%},{% endif -%}
+            {%- endfor -%}
+            ]}
     {% elif property['x-relationship'] and property['$ref'] %}
         TextInput
     {% else -%}
