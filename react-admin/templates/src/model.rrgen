@@ -1,5 +1,6 @@
 {# generate model ui #}
 {% import "macros_front.tpl" as macros %}
+{% import "macros.tpl" as core %}
 
 {% for entity in entities -%}
 {% if entity.properties %}
@@ -8,7 +9,7 @@
 to: {{ outputFolder }}/src/models/{{ entity.title | snake_case }}.tsx
 message: "File for ui `{{module_name}}` was created successfully."
 ===
-import { Create, List, Datagrid, TextField, ReferenceField, EditButton, Edit, SimpleForm, ReferenceInput, TextInput, DateTimeInput, ReferenceArrayInput } from "react-admin";
+import { Create, List, Datagrid, TextField,DateField, ReferenceField, EditButton, Edit, SimpleForm, ReferenceInput, TextInput,DateInput, DateTimeInput, ReferenceArrayInput } from "react-admin";
 
 const {{ entity.title | camel_case }}Filters = [
     <TextInput source="q" label="Search" alwaysOn />,
@@ -18,11 +19,12 @@ const {{ entity.title | camel_case }}Filters = [
 export const {{ entity.title | pascal_case }}List = () => (
     <List filters={ {{ entity.title | camel_case }}Filters}>
         <TextField source="id" />
-        <TextField source="created_at" />
-        <TextField source="updated_at" />
+        {% if extraFields and 'createdAt' in extraFields -%}<TextField source="created_at" />{% endif -%}
+        {% if extraFields and 'updatedAt' in extraFields -%}<TextField source="updated_at" />{% endif -%}
         <Datagrid rowClick={false}>
             {% for name,property in entity.properties -%}
-            <{{ macros::get_field(property=property) }} source="{{name|snake_case}}" />
+            {% if core::relation_is_one_to_many(property=property)=='true' -%}{% continue -%}{% endif -%}
+            <{{ macros::get_field(property=property) }} source="{{name|camel_case}}" />
             {% endfor %}
             <EditButton />
         </Datagrid>
@@ -33,10 +35,11 @@ export const {{ entity.title | pascal_case }}Edit = () => (
     <Edit>
         <SimpleForm>
         <TextInput readOnly source="id" />
-        <DateTimeInput readOnly source="created_at" />
-        <DateTimeInput readOnly source="updated_at" />
+        {% if extraFields and 'createdAt' in extraFields -%}<DateTimeInput readOnly source="created_at" />{% endif -%}
+        {% if extraFields and 'updatedAt' in extraFields -%}<DateTimeInput readOnly source="updated_at" />{% endif -%}
         {% for name,property in entity.properties -%}
-            <{{ macros::get_input_field(property=property) }} {{ macros::is_read_only(property=property) }} source="{{name|snake_case}}" />
+            {% if core::relation_is_one_to_many(property=property)=='true' -%}{% continue -%}{% endif -%}
+            <{{ macros::get_input_field(property=property) }} {{ macros::is_read_only(property=property) }} source="{{name|camel_case}}" />
         {% endfor %}
         </SimpleForm>
     </Edit>
@@ -46,7 +49,8 @@ export const {{ entity.title | pascal_case }}Create = () => (
       <Create>
         <SimpleForm>
         {% for name,property in entity.properties -%}
-            <{{ macros::get_input_field(property=property) }} source="{{name|snake_case}}" />
+            {% if core::relation_is_one_to_many(property=property)=='true' -%}{% continue -%}{% endif -%}
+            <{{ macros::get_input_field(property=property) }} source="{{name|camel_case}}" />
         {% endfor %}
         </SimpleForm>
       </Create>

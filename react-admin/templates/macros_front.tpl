@@ -7,9 +7,9 @@
         {% if property.format and property.format == "uuid" -%}
             TextField
         {% elif property.format and property.format == "date-time" -%}
-            DateTimeInput
+            DateField
         {% elif property.format and property.format == "date" -%}
-            DateInput
+            DateField
         {% elif property.format and property.format == "time" -%}
             TextField
         {% else -%}
