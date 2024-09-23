@@ -143,11 +143,13 @@
 {%- endmacro -%}
 
 {%- macro get_relation(property) -%}
+{%- filter trim -%}
     {% if property['$ref'] -%}
     {{ property['$ref'] | split(pat=".")|first }}
     {% elif self::relation_is_many_to_many(property=property)=='true' -%}
     {{ property['items']['$ref'] | split(pat=".") | first }}
     {%- endif -%}
+{%- endfilter -%}
 {%- endmacro -%}
 
 {%- macro get_relation_from_string(string) -%}

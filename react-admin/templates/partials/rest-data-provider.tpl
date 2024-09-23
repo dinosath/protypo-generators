@@ -38,7 +38,6 @@ export const dataProvider: DataProvider = {
             data: json,
             total: contentRange ? parseInt(contentRange.split('/').pop(), 10) : json.length,
         };
-        console.log("return_data:" + JSON.stringify(return_data))
         return return_data;
     },
 
