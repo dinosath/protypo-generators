@@ -16,53 +16,24 @@
             TextField
         {% endif -%}    
     {% elif property.type and property.type == "boolean" -%}
-        BooleanField
+            BooleanField
     {% elif property.type and property.type == "integer" -%}
-        {% set min = property.minimum or property.exclusiveMinimum -%}
-        {% set max = property.maximum or property.exclusiveMaximum -%}
-        {% if min and min >= 0 -%}
-            {% if max and max <= 255 -%}
-                TextField
-            {% elif max and max <= 65535 -%}
-                TextField
-            {% elif max and max <= 4294967295 -%}
-                TextField
-            {% else -%}
-                TextField
-            {% endif -%}
-        {% else -%}
-            {% if max and max <= 127 -%}
-                TextField
-            {% elif max and max <= 32767 -%}
-                TextField
-            {% elif max and max <= 2147483647 -%}
-                TextField
-            {% else -%}
-                TextField
-            {% endif -%}
-        {% endif -%}
+            NumberField
     {% elif property.type and property.type == "number" -%}
-        {% set min = property.minimum or property.exclusiveMinimum -%}
-        {% set max = property.maximum or property.exclusiveMaximum -%}
-        {% if min or max -%}
-            {% if min and min >= -3.40282347 and max and max <= 3.40282347 -%}
-                TextField
-            {% else -%}
-                TextField
-            {% endif -%}
-        {% else -%}
-            TextField
-        {% endif -%}
+            NumberField
     {% elif property.enum %}
-        TextField
+            TextField
     {% elif macros::relation_is_one_to_many(property=property)=='true' or macros::relation_is_many_to_many(property=property)=='true'  -%}
         {% set relation = macros::get_relation(property=property) | plural | snake_case -%}
-        TextField
+            TextField
     {% elif macros::relation_is_many_to_one(property=property)=='true' -%}
         {% set relation = macros::get_relation(property=property) -%}
-        ReferenceField reference="{{ relation | plural | kebab_case }}" label="{{ relation | pascal_case }}"
+            ReferenceField reference="{{ relation | plural | kebab_case }}" label="{{ relation | pascal_case }}"
+    {% elif macros::relation_is_many_to_many(property=property)=='true' -%}
+        {% set relation = macros::get_relation(property=property) -%}
+        ReferenceArrayField reference="{{ relation | plural | kebab_case }}" label="{{ relation | pascal_case }}"
     {% else -%}
-        TextField
+            TextField
     {% endif -%}
 {% endfilter %}
 {%- endmacro -%}
@@ -79,9 +50,9 @@ readOnly
         {% if property.format and property.format == "uuid" -%}
             TextInput
         {% elif property.format and property.format == "date-time" -%}
-            TextInput
+            DateTimeInput
         {% elif property.format and property.format == "date" -%}
-            TextInput
+            DateInput
         {% elif property.format and property.format == "time" -%}
             TextInput
         {% else -%}
@@ -90,49 +61,21 @@ readOnly
     {% elif property.type and property.type == "boolean" -%}
         BooleanInput
     {% elif property.type and property.type == "integer" -%}
-        {% set min = property.minimum or property.exclusiveMinimum -%}
-        {% set max = property.maximum or property.exclusiveMaximum -%}
-        {% if min and min >= 0 -%}
-            {% if max and max <= 255 -%}
-                TextInput
-            {% elif max and max <= 65535 -%}
-                TextInput
-            {% elif max and max <= 4294967295 -%}
-                TextInput
-            {% else -%}
-                TextInput
-            {% endif -%}
-        {% else -%}
-            {% if max and max <= 127 -%}
-                TextInput
-            {% elif max and max <= 32767 -%}
-                TextInput
-            {% elif max and max <= 2147483647 -%}
-                TextInput
-            {% else -%}
-                TextInput
-            {% endif -%}
-        {% endif -%}
+        NumberInput
     {% elif property.type and property.type == "number" -%}
-        {% set min = property.minimum or property.exclusiveMinimum -%}
-        {% set max = property.maximum or property.exclusiveMaximum -%}
-        {% if min or max -%}
-            {% if min and min >= -3.40282347 and max and max <= 3.40282347 -%}
-                TextInput
-            {% else -%}
-                TextInput
-            {% endif -%}
-        {% else -%}
-            TextInput
-        {% endif -%}
+        NumberInput
     {% elif property.enum %}
         SelectField choices={[
             {%- for enum in property.enum -%}
                { name: '{{ enum }}' }{%- if not loop.last -%},{% endif -%}
             {%- endfor -%}
             ]}
-    {% elif property['x-relationship'] and property['$ref'] %}
-        TextInput
+    {% elif macros::relation_is_many_to_one(property=property)=='true' -%}
+        {% set relation = macros::get_relation(property=property) -%}
+        ReferenceInput reference="{{ relation | plural | kebab_case }}" label="{{ relation | pascal_case }}"
+    {% elif macros::relation_is_many_to_many(property=property)=='true' -%}
+        {% set relation = macros::get_relation(property=property) -%}
+        ReferenceArrayInput reference="{{ relation | plural | kebab_case }}" label="{{ relation | pascal_case }}"
     {% else -%}
         TextInput
     {% endif -%}

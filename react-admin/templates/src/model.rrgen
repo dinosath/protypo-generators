@@ -9,7 +9,7 @@
 to: {{ outputFolder }}/src/models/{{ entity.title | camel_case }}.tsx
 message: "File for ui `{{module_name}}` was created successfully."
 ===
-import { Show, SimpleShowLayout, Create, List, DatagridConfigurable, TextField, BooleanField, BooleanInput, DateField, ReferenceField, EditButton, Edit, SimpleForm, ReferenceInput, TextInput,DateInput, DateTimeInput, ReferenceArrayInput } from "react-admin";
+import { Show, SimpleShowLayout, Create, List, DatagridConfigurable, TextField, BooleanField, BooleanInput, DateField, ReferenceField, EditButton, Edit, SimpleForm, ReferenceInput, TextInput,DateInput, DateTimeInput, ReferenceArrayInput, NumberField, NumberInput } from "react-admin";
 import { ListActions } from "../components/common/action-buttons/listActions.tsx";
 import { UserBulkActionButtons } from "../components/common/action-buttons/bulkListActions.tsx";
 import {ShowActionButtons} from "../components/common/action-buttons/showActionButtons.tsx";

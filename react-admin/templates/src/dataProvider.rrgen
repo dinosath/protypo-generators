@@ -3,6 +3,8 @@ message: "File for ui `package.json` was created successfully."
 ===
 {% if features and 'graphql' in features -%}
 {% include "partials/graphql-data-provider.tpl" -%}
+{% elif features and 'jhipster' in features -%}
+{% include "partials/jhipster-data-provider.tpl" -%}
 {% else -%}
 {% include "partials/rest-data-provider.tpl" -%}
 {% endif -%}
