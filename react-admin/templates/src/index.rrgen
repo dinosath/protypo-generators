@@ -7,7 +7,7 @@ import { App } from "./App";
 
 import { Admin, Resource } from "react-admin";
 import { dataProvider } from './dataProvider';
-{% for entity in entities -%}
+{% for entity_name,entity in entities -%}
 {% if not entity.properties -%}{% continue -%}{% endif -%}
 import {{ entity.title | camel_case }} from "./models/{{ entity.title | camel_case }}";
 {% endfor %}
@@ -16,7 +16,7 @@ import authProvider from './authProvider';
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <Admin dataProvider={dataProvider} authProvider={authProvider} dashboard={Dashboard}>
-  {% for entity in entities -%}
+  {% for entity_name,entity in entities -%}
   {% if not entity.properties %}{% continue %}{% endif %}
       <Resource name="{{ entity.title | plural | kebab_case }}" { ...{{ entity.title | camel_case }} }/>
   {% endfor %}

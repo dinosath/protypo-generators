@@ -31,7 +31,7 @@
             ReferenceField reference="{{ relation | plural | kebab_case }}" label="{{ relation | pascal_case }}"
     {% elif macros::relation_is_many_to_many(property=property)=='true' -%}
         {% set relation = macros::get_relation(property=property) -%}
-            ReferenceArrayField reference="{{ relation | plural | kebab_case }}" label="{{ relation | pascal_case }}"
+        ReferenceArrayField reference="{{ relation | plural | kebab_case }}" label="{{ relation | pascal_case }}"
     {% else -%}
             TextField
     {% endif -%}
@@ -71,9 +71,11 @@ readOnly
             {%- endfor -%}
             ]}
     {% elif macros::relation_is_many_to_one(property=property)=='true' -%}
-        ReferenceInput
+        {% set relation = macros::get_relation(property=property) -%}
+        ReferenceInput reference="{{ relation | plural | kebab_case }}" label="{{ relation | pascal_case }}"
     {% elif macros::relation_is_many_to_many(property=property)=='true' -%}
-        ReferenceArrayInput 
+        {% set relation = macros::get_relation(property=property) -%}
+        ReferenceArrayInput reference="{{ relation | plural | kebab_case }}" label="{{ relation | pascal_case }}"
     {% else -%}
         TextInput
     {% endif -%}
@@ -102,13 +104,5 @@ readOnly
 {%- if macros::relation_is_many_to_one(property=property)=='true' -%}
 .id
 {%- endif -%}
-{%- endfilter -%}
-{%- endmacro -%}
-
-{%- macro validation(entity,name,property) -%}
-{%- filter trim -%}
-    {%- if entity.required and name in entity.required  -%}
-        validate={[required()]}
-    {%- endif -%}
 {%- endfilter -%}
 {%- endmacro -%}

@@ -116,11 +116,24 @@ export const dataProvider: DataProvider = {
     },
 
     deleteMany: async (resource, params) => {
+        console.log('[delete] resource: ' + JSON.stringify(resource));
+        console.log('[delete] params: ' + JSON.stringify(params));
         const query = {
             filter: JSON.stringify({id: params.ids}),
         };
-        return fetchJson(`${apiUrl}/${resource}?${stringify(query)}`, {
-            method: 'DELETE',
-        }).then(({json}) => ({data: json}));
+        let deletePromises = params.ids.map(id => {
+            fetchJson(`${apiUrl}/${resource}/${id}`, {
+                method: 'DELETE',
+            })
+        });
+        return Promise.all(deletePromises)
+            .then((responses) => {
+                // Once all deletions are done, return the ids of the deleted items
+                return {data: params.ids};
+            })
+            .catch(error => {
+                console.error('[deleteMany] Error:', error);
+                throw new Error(error);
+            });
     }
 };

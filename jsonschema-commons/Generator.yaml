@@ -1,0 +1,14 @@
+apiVersion: 0.0.1
+name: jsonschema-commons
+version: 0.0.1
+description: Package containing common macros for handling jsonschema files. Use in tera templates.
+keywords:
+  - jsonschema-commons
+  - jsonschema
+  - commons
+home: The URL of this projects home page (optional)
+sources:
+  - https://github.com/dinosath/template-packages
+maintainers: # (optional)
+  - name: Konstantinos Athanasiou
+    email: dinosath0@gmail.com
