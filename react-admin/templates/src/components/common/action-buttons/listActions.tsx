@@ -1,10 +1,12 @@
-import { TopToolbar, SelectColumnsButton, FilterButton, CreateButton, ExportButton } from "react-admin";
+import {TopToolbar, SelectColumnsButton, FilterButton, CreateButton, ExportButton} from "react-admin";
+export const ListActions = (props: any) => {
 
-export const ListActions = () => (
-    <TopToolbar>
-        <FilterButton />
-        <CreateButton />
-        <ExportButton />
-        <SelectColumnsButton />
-    </TopToolbar>
-);
+    return (
+        <TopToolbar>
+            <FilterButton/>
+            <CreateButton/>
+            <ExportButton/>
+            <SelectColumnsButton/>
+        </TopToolbar>
+    );
+};

@@ -67,7 +67,7 @@ export const dataProvider: DataProvider = {
         };
         const url = `${apiUrl}/${resource}?${stringify(query)}`;
 
-        return fetchJson(url).then(({headers, json}) => ({
+        return fetchJson(url,{}).then(({headers, json}) => ({
             data: json,
             total: parseInt((headers.get('content-range') || "0").split('/').pop() || '0', 10),
         }));
