@@ -201,7 +201,7 @@
 
 {%- macro get_m2m_relations(entities) -%}
 {% set_global created_relations = [] %}
-{% for entity in entities -%}
+{% for entity_name,entity in entities -%}
     {% if entity.properties %}
         {% for name,property in entity.properties -%}
             {% if self::relation_is_many_to_many(property=property)=='true' -%}

@@ -1,7 +1,7 @@
 {# generate entities #}
-{% import "macros.tpl" as macros %}
+{% import "_macros.tpl" as macros %}
 
-{% for entity in entities -%}
+{% for entity_name,entity in entities -%}
 {% if entity.properties %}
 
 {% set file_name = entity.title | snake_case -%}
@@ -119,7 +119,7 @@ pub enum RelatedEntity {
 {% endif -%}
 
 {% if file_name=="user" %}
-{% include "user_active_model.tpl" -%}
+{% include "_user_active_model.tpl" -%}
 {% else -%}
 impl ActiveModelBehavior for ActiveModel {
 }

@@ -22,21 +22,21 @@ const client = new ApolloClient({
 
 //todo add nodes and ids in relationships
 const fields = {
-    {% for entity in entities -%}
+    {% for entity_name,entity in entities -%}
     {%- if not entity.properties -%}{%- continue -%}{%- endif -%}
     {{ entity.title | snake_case }}: "id createdAt updatedAt {{macros::get_all_properties_by_name(entity=entity)}}"{%- if not loop.last -%},{% endif %}
     {% endfor %}
 };
 
 const pascal = {
-    {% for entity in entities -%}
+    {% for entity_name,entity in entities -%}
     {%- if not entity.properties -%}{%- continue -%}{%- endif -%}
     {{ entity.title | snake_case }}: "{{ entity.title | pascal_case }}"{%- if not loop.last -%},{% endif %}
     {% endfor %}
 };
 
 const camel = {
-    {% for entity in entities -%}
+    {% for entity_name,entity in entities -%}
     {%- if not entity.properties -%}{%- continue -%}{%- endif -%}
     {{ entity.title | snake_case }}: "{{ entity.title | camel_case }}"{%- if not loop.last -%},{% endif %}
     {% endfor %}

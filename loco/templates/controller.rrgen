@@ -1,7 +1,7 @@
 {# generate controllers #}
-{% import "macros.tpl" as macros %}
+{% import "_macros.tpl" as macros %}
 
-{% for entity in entities -%}
+{% for entity_name,entity in entities -%}
 {% if entity.properties %}
 
 {% set file_name = entity.title | snake_case -%}
@@ -25,8 +25,6 @@ use axum::{debug_handler,extract::Query};
 {{ macros::seaorm_prelude_imports(entity=entity)|trim }}
 use crate::models::entities::{{ file_name }}::{ActiveModel, Entity, Model, Column};
 use super::utils::ListParams;
-
-{{ this | json_encode()}}
 
 {% if macros::has_one_to_many_relation(entity=entity)=='true' or macros::has_many_to_many_relation(entity=entity)=='true' -%}
 #[derive(Clone, Debug, Serialize, Deserialize)]

@@ -1,4 +1,4 @@
-{% import "macros.tpl" as macros -%}
+{% import "_macros.tpl" as macros -%}
 
 {%- if features and 'graphql' in features  -%}
 {% set file_name = outputFolder ~ "/src/graphql/query_root.rs" %}
@@ -28,7 +28,7 @@ pub fn schema(
     seaography::register_entities!(
         builder,
         [
-            {% for entity in entities -%}
+            {% for entity_name,entity in entities -%}
                 {% if not entity.properties %}{% continue %}{% endif %}
                 {{ entity.title | snake_case }}{%- if not loop.last -%},{% endif -%}
             {% endfor %}
