@@ -1,0 +1,49 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Buyer",
+    "type": "object",
+    "properties": {
+        "name": {
+            "type": "string"
+        },
+        "mobilePhone": {
+            "type": "string"
+        },
+        "comment":{
+            "type": "string"
+        },
+        "email": {
+            "type": "string"
+        },
+        "phone": {
+            "type": "string"
+        },
+        "taxNumber": {
+            "type": "string"
+        },
+        "shortCode": {
+            "type": "string"
+        },
+        "address": {
+            "type": "string"
+        },
+        "postalCode": {
+            "type": "string"
+        },
+        "region": {
+            "type": "string"
+        },
+        "city": {
+            "type": "string"
+        },
+        "country": {
+            "type": "string"
+        }
+    },
+    "required": [
+        "name",
+        "phone",
+        "taxNumber",
+        "shortCode"
+    ]
+}

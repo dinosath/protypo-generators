@@ -1,4 +1,4 @@
-to: {{ outputFolder }}/package.json
+to: {{ values.outputFolder }}/package.json
 message: "File for ui `package.json` was created successfully."
 ===
 {
@@ -6,6 +6,7 @@ message: "File for ui `package.json` was created successfully."
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "loco": "vite --config vite.config.loco.ts",
     "build": "vite build",
     "serve": "vite preview",
     "type-check": "tsc --noEmit",

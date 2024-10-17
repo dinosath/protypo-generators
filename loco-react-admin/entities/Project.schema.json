@@ -1,0 +1,20 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Project",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    },
+    "purchase": {
+      "$ref": "Purchase.json",
+      "x-relationship": "one-to-many"
+    }
+  },
+  "required": [
+    "name"
+  ]
+}

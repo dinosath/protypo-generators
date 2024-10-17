@@ -1,10 +1,10 @@
-{% set file_name= outputFolder ~"/tests/requests/auth.rs" %}
+{% set file_name= values.outputFolder ~"/tests/requests/auth.rs" %}
 to: {{file_name}}
 message: "File `{{file_name}}` was created successfully."
 ===
 use insta::{assert_debug_snapshot, with_settings};
 use loco_rs::testing;
-use {{ applicationName }}::{app::App, models::users};
+use {{ values.application.name }}::{app::App, models::users};
 use rstest::rstest;
 use serial_test::serial;
 

@@ -98,7 +98,7 @@ readOnly
 {{ properties | join(sep=" ") }}
 {%- endmacro -%}
 
-{%- macro source(features,name,property) -%}
+{%- macro source(name,property) -%}
 {% filter trim %}
 {{name|camel_case}}
 {%- if macros::relation_is_many_to_one(property=property)=='true' -%}

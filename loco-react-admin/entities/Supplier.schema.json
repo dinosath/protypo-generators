@@ -1,0 +1,23 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Supplier",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string"
+    },
+    "address": {
+      "type": "string"
+    },
+    "contactInfo": {
+      "type": "string"
+    },
+    "purchase": {
+      "$ref": "Purchase.json",
+      "x-relationship": "one-to-many"
+    }
+  },
+  "required": [
+    "name"
+  ]
+}

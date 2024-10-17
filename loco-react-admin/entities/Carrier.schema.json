@@ -1,0 +1,62 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Carrier",
+    "type": "object",
+    "properties": {
+        "code": {
+            "type": "string"
+        },
+        "active": {
+            "type": "boolean"
+        },
+        "name": {
+            "type": "string"
+        },
+        "taxNumber": {
+            "type": "string"
+        },
+        "shortCode": {
+            "type": "string"
+        },
+        "address": {
+            "type": "string"
+        },
+        "postalCode": {
+            "type": "string"
+        },
+        "region": {
+            "type": "string"
+        },
+        "city": {
+            "type": "string"
+        },
+        "country": {
+            "type": "string"
+        },
+        "mobilePhone": {
+            "type": "string"
+        },
+        "email": {
+            "type": "string"
+        },
+        "phone": {
+            "type": "string"
+        },
+        "remarks": {
+            "type": "string"
+        },
+        "purchase": {
+            "$ref": "Purchase.json",
+            "x-relationship": "one-to-many"
+        }
+
+    },
+    "required": [
+        "code",
+        "active",
+        "name",
+        "taxNumber",
+        "shortCode",
+        "phone"
+    ]
+}

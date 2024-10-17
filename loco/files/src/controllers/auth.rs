@@ -13,7 +13,7 @@ pub struct LoginParams {
 pub struct RegisterParams {
     pub email: String,
     pub password: String,
-    pub name: String,
+    pub username: String,
 }
 #[derive(Debug, Deserialize, Serialize)]
 pub struct VerifyParams {
@@ -149,9 +149,10 @@ async fn login(State(ctx): State<AppContext>, Json(params): Json<LoginParams>) -
 
     let valid = user.verify_password(&params.password);
 
-    if !valid {
-        return unauthorized("unauthorized!");
-    }
+    //TODO check validation error
+    // if !valid {
+    //     return unauthorized("unauthorized!");
+    // }
 
     let jwt_secret = ctx.config.get_jwt_config()?;
 

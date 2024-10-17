@@ -1,0 +1,33 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "VatExemption",
+  "type": "object",
+  "properties": {
+    "code": {
+      "type": "string"
+    },
+    "shortCode": {
+      "type": "string"
+    },
+    "active": {
+      "type": "boolean"
+    },
+    "description": {
+      "type": "string"
+    },
+    "myDataCode": {
+      "type": "string"
+    },
+    "deductInputVat": {
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "code",
+    "shortCode",
+    "active",
+    "description",
+    "myDataCode",
+    "deductInputVAT"
+  ]
+}

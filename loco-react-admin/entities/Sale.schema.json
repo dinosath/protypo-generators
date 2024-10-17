@@ -1,0 +1,130 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Sale",
+  "type": "object",
+  "properties": {
+    "date": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "taxNumber": {
+      "type": "string"
+    },
+    "document": {
+      "type": "string"
+    },
+    "netAmount": {
+      "type": "number"
+    },
+    "discountAmount": {
+      "type": "number"
+    },
+    "expenses": {
+      "type": "number"
+    },
+    "vatAmount": {
+      "type": "number"
+    },
+    "totalAmount": {
+      "type": "number"
+    },
+    "remarks": {
+      "type": "string"
+    },
+    "deliveryDate": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "shippingStart": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "transportNumber": {
+      "type": "string"
+    },
+    "deliveryAddress": {
+      "type": "string"
+    },
+    "deliveryPostalCode": {
+      "type": "string"
+    },
+    "deliveryRegion": {
+      "type": "string"
+    },
+    "deliveryCity": {
+      "type": "string"
+    },
+    "deliveryCountry": {
+      "type": "string"
+    },
+    "approvalStatus": {
+      "$ref": "ApprovalStatus.json"
+    },
+    "notes": {
+      "type": "string"
+    },
+    "series": {
+      "$ref": "PurchaseTaxSeries.json",
+      "x-relationship": "many-to-one"
+    },
+    "taxSeries": {
+      "$ref": "TaxSeries.json",
+      "x-relationship": "many-to-one"
+    },
+    "vatExemption": {
+      "$ref": "VatExemption.json",
+      "x-relationship": "many-to-one"
+    },
+    "supplier": {
+      "$ref": "Supplier.json",
+      "x-relationship": "many-to-one"
+    },
+    "supplierBranch": {
+      "$ref": "Branch.json",
+      "x-relationship": "many-to-one"
+    },
+    "vatStatus": {
+      "$ref": "VatStatus.json",
+      "x-relationship": "many-to-one"
+    },
+    "movementPurpose": {
+      "$ref": "MovementPurpose.json",
+      "x-relationship": "many-to-one"
+    },
+    "shippingMethod": {
+      "$ref": "ShippingMethod.json",
+      "x-relationship": "many-to-one"
+    },
+    "buyer": {
+      "$ref": "Buyer.json",
+      "x-relationship": "many-to-one"
+    },
+    "transportMeans": {
+      "$ref": "TransportMeans.json",
+      "x-relationship": "many-to-one"
+    },
+    "carrier": {
+      "$ref": "Carrier.json",
+      "x-relationship": "many-to-one"
+    },
+    "payment": {
+      "$ref": "Payment.json",
+      "x-relationship": "many-to-one"
+    },
+    "items": {
+      "type": "array",
+      "items": {
+        "$ref": "Item.json",
+        "x-relationship": "many-to-many"
+      }
+    }
+  },
+  "required": [
+    "vatExemption",
+    "date",
+    "document",
+    "netAmount",
+    "expenses",
+    "vatAmount"
+  ]
+}

@@ -6,10 +6,10 @@
 
 {% set file_name = entity.title | snake_case -%}
 {% set module_name = file_name | pascal_case -%}
-to: {{ outputFolder }}/src/models/entities/{{ file_name }}.rs
+to: {{ values.outputFolder }}/src/models/entities/{{ file_name }}.rs
 message: "Entity `{{module_name}}` was added successfully."
 injections:
-- into: {{ outputFolder }}/src/models/entities/mod.rs
+- into: {{ values.outputFolder }}/src/models/entities/mod.rs
   append: true
   content: "pub mod {{ file_name }};"
 ===

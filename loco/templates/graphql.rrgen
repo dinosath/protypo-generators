@@ -1,13 +1,13 @@
 
 {% if features and 'graphql' in features  %}
-{% set file_name = outputFolder ~ "/src/controllers/graphql.rs" %}
+{% set file_name = values.outputFolder ~ "/src/controllers/graphql.rs" %}
 to: {{file_name}}
 message: "File `{{file_name}}` was created successfully."
 injections:
-- into: {{ outputFolder }}/src/controllers/mod.rs
+- into: {{ values.outputFolder }}/src/controllers/mod.rs
   append: true
   content: "pub mod graphql;"
-- into: {{ outputFolder }}/src/app.rs
+- into: {{ values.outputFolder }}/src/app.rs
   after: "AppRoutes::"
   content: "            .add_route(controllers::graphql::routes())"
 ===
