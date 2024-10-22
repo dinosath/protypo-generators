@@ -1,0 +1,81 @@
+# Loco configuration file documentation
+logger:
+  enable: {{ get_env(name="LOGGER_ENABLE", default="true") }}
+  pretty_backtrace: true
+  level: {{ get_env(name="LOGGER_LEVEL", default="error") }}
+  format: compact
+server:
+  port: {{ get_env(name="SERVER_PORT", default="8080") }}
+  host: {{ get_env(name="SERVER_HOST", default="http://127.0.0.1") }}
+  middlewares:
+
+    limit_payload:
+      enable: {{ get_env(name="LIMIT_ENABLE", default="true") }}
+      body_limit: {{ get_env(name="LIMIT_SIZE", default="5mb") }}
+
+    logger:
+      enable: {{ get_env(name="LOGGER_ENABLE", default="true") }}
+
+    catch_panic:
+      enable: {{ get_env(name="CATCH_PANIC_ENABLE", default="true") }}
+
+    timeout_request:
+      enable: {{ get_env(name="TIMEOUT_ENABLE", default="true") }}
+      timeout: {{ get_env(name="TIMEOUT", default="5000") }}
+
+    cors:
+      enable: {{ get_env(name="SERVER_MIDDLEWARE_CORS_ENABLE", default="false") }}
+      allow_origins: ["any"]
+      allow_headers: ["*"]
+      allow_methods: ["*"]
+      max_age: null
+      vary: ["origin","access-control-request-method","access-control-request-headers"]
+
+    static:
+      enable: {{ get_env(name="SERVER_STATIC_ENABLE", default="true") }}
+      must_exist: {{ get_env(name="SERVER_MUST_EXIST", default="true") }}
+      precompressed: {{ get_env(name="SERVER_STATIC_PRECOMPRESSED", default="true") }}
+      folder:
+        uri: "/"
+        path: "dist"
+      fallback: "dist/index.html"
+    compression:
+      enable: {{ get_env(name="COMPRESSION_ENABLE", default="true") }}
+
+workers:
+  mode: BackgroundAsync
+
+mailer:
+  smtp:
+    enable: {{ get_env(name="MAILER_ENABLE", default="false") }}
+    host: {{ get_env(name="MAILER_HOST", default="localhost") }}
+    port: {{ get_env(name="MAILER_PORT", default="1025") }}
+    secure: false
+
+# Initializers Configuration
+# initializers:
+#  oauth2:
+#    authorization_code: # Authorization code grant type
+#      - client_identifier: google # Identifier for the OAuth2 provider. Replace 'google' with your provider's name if different, must be unique within the oauth2 config.
+#        ... other fields
+
+database:
+  uri: {{ get_env(name="DATABASE_URL", default="postgres://loco:loco@localhost:5432/loco") }}
+  enable_logging: {{ get_env(name="DATABASE_ENABLE_LOGGING", default="false") }}
+  connect_timeout: {{ get_env(name="DATABASE_CONNECT_TIMEOUT", default="500") }}
+  idle_timeout: {{ get_env(name="DATABASE_IDLE_TIMEOUT", default="500") }}
+  min_connections: {{ get_env(name="DATABASE_MIN_CONNECTIONS", default="1") }}
+  max_connections: {{ get_env(name="DATABASE_MAX_CONNECTIONS", default="1") }}
+  auto_migrate: {{ get_env(name="DATABASE_AUTO_MIGRATE", default="true") }}
+  dangerously_truncate: {{ get_env(name="DATABASE_DANGEROUSLY_TRUNCATE", default="false") }}
+  dangerously_recreate: {{ get_env(name="DATABASE_DANGEROUSLY_TRUNCATE", default="false") }}
+
+queue:
+  kind: Redis
+  uri: {{ get_env(name="REDIS_URL", default="redis://127.0.0.1") }}
+  dangerously_flush: false
+
+auth:
+  jwt:
+    secret: {{ get_env(name="AUTH_JWT_SECRET", default="rpo2v3b8TLtiiJceEfyg") }}
+    expiration: {{ get_env(name="AUTH_JWT_EXPIRATION", default="604800") }}
