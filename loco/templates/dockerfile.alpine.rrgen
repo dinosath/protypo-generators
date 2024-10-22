@@ -10,13 +10,24 @@ RUN apk add pkgconfig openssl-dev libc-dev
 COPY ./ ./
 RUN cargo build --release
 
+FROM node:lts-slim as node-builder
+
+WORKDIR /app/src
+
+COPY frontend ./
+
+RUN npm install
+RUN npm run build
+
 FROM alpine:latest
 WORKDIR /app
-RUN apk update \
-    && apk add openssl ca-certificates
+RUN apk update && apk add openssl ca-certificates
+ENV LOCO_ENV=production
 
-EXPOSE 80 443
+COPY --from=node-builder /app/src/dist /app/dist
 
 COPY --from=builder /app/src/target/release/{{ values.application.name }}-cli /app/{{ values.application.name }}-cli
+COPY --from=builder /app/src/config /app/config
 
-CMD ["/app/{{ values.application.name }}-cli"]
+ENTRYPOINT ["/app/{{ values.application.name }}-cli"]
+CMD ["start"]
